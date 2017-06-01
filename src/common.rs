@@ -2,12 +2,14 @@ use chrono::NaiveDate;
 use std::fmt;
 use serde;
 
+/// A common type for toornament dates.
 pub type Date = NaiveDate;
 
 use participants::Participant;
 
 macro_rules! enum_number {
     ($name:ident { $($variant:ident = $value:expr, )* }) => {
+        #[allow(missing_docs)]
         #[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
         pub enum $name {
             $($variant = $value,)*
@@ -59,7 +61,9 @@ macro_rules! enum_number {
 /// Team size bounds (minimum and maximum).
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct TeamSize {
+    /// Minimum team size
     pub min: i64,
+    /// Maximum team size
     pub max: i64,
 }
 

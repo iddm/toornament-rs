@@ -37,8 +37,11 @@ mod participants;
 mod common;
 
 pub use error::{ Result, Error };
-pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult };
-pub use disciplines::{ DisciplineId, Discipline, Disciplines };
+pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
+pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
+pub use games::{ Game, Games };
+pub use participants::{ ParticipantId, Participant };
+pub use disciplines::{ DisciplineId, Discipline, Disciplines, AdditionalFields };
 pub use filters::{ MatchFilter };
 pub use tournaments::{
     ParticipantType,
