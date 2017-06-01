@@ -8,6 +8,7 @@ documentation = "https://vityafx.github.io/toornament-rs/master/toornament/"
 readme = "README.md"
 license = "MIT"
 keywords = ["game", "toornament", "tourney", "tournament", "api", "esport"]
+categories = ["api-bindings"]
 
 [dependencies]
 hyper = "0.10"
