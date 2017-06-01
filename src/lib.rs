@@ -40,11 +40,10 @@ pub use error::{ Result, Error };
 pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
 pub use games::{ Game, Games };
-pub use participants::{ ParticipantId, Participant };
+pub use participants::{ ParticipantId, ParticipantType, Participant };
 pub use disciplines::{ DisciplineId, Discipline, Disciplines, AdditionalFields };
 pub use filters::{ MatchFilter };
 pub use tournaments::{
-    ParticipantType,
     TournamentId,
     Tournament,
     Tournaments,
@@ -54,11 +53,14 @@ pub use tournaments::{
 
 const API_BASE: &'static str = "https://api.toornament.com";
 
-header! {
-    /// X-Api-Key header is used in toornament authentication mechanism.
-    /// It must point to a valid application key (String).
-    (XApiKey, "X-Api-Key") => [String]
+mod custom_headers {
+    header! {
+        /// X-Api-Key header is used in toornament authentication mechanism.
+        /// It must point to a valid application key (String).
+        (XApiKey, "X-Api-Key") => [String]
+    }
 }
+use custom_headers::*;
 
 #[derive(Debug, Clone, Copy, Ord, Eq, PartialOrd, PartialEq, Hash)]
 enum Endpoint {

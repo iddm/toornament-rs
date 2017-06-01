@@ -1,6 +1,7 @@
 use matches::MatchType;
 use common::Date;
 use disciplines::DisciplineId;
+use participants::ParticipantType;
 
 
 /// A tournament identity.
@@ -19,16 +20,6 @@ pub enum TournamentStatus {
     Pending,
     /// Indicates all matches have a result
     Completed,
-}
-
-/// A participant type enumeration.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ParticipantType {
-    /// Implies the tournament is played by teams
-    Team,
-    /// Means the tournament is played by players
-    Single,
 }
 
 /// A stream identity.
