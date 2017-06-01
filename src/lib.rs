@@ -113,10 +113,9 @@ fn parse_token<R: Read>(json_str: R) -> Result<String> {
 }
 
 fn get_ep_address(ep: Endpoint) -> Result<String> {
-    if API_EP.contains_key(&ep) {
-        return Ok(format!("{}{}", API_BASE, API_EP.get(&ep).unwrap())) // safe
-    }
-    Err(Error::Other("Attempted to use unexistent endpoint"))
+    API_EP.get(&ep)
+          .map(|a| format!("{}{}", API_BASE, a))
+          .ok_or(Error::Other("Attempted to use unexistent endpoint"))
 }
 
 fn match_filter_to_get_string(f: Option<MatchFilter>) -> String {
@@ -184,7 +183,7 @@ impl Toornament {
                                              client_id: S,
                                              client_secret: S) -> Result<Toornament> {
 
-        let client = reqwest::Client::new().unwrap(); // intented to crash
+        let client = reqwest::Client::new()?;
         let keys = (api_token.into(), client_id.into(), client_secret.into());
         let body = format!("grant_type=client_credentials&client_id={}&client_secret={}",
                             keys.1,
