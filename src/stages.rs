@@ -38,6 +38,7 @@ pub struct Stage {
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Stages(pub Vec<Stage>);
 
+
 #[cfg(test)]
 mod tests {
     use ::*;

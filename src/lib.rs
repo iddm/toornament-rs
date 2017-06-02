@@ -36,6 +36,7 @@ mod filters;
 mod participants;
 mod permissions;
 mod stages;
+mod videos;
 mod common;
 
 pub use error::{ Result, Error };
@@ -43,6 +44,7 @@ pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
 pub use games::{ GameNumber, Game, Games };
 pub use stages::{ StageNumber, StageType, Stage, Stages };
+pub use videos::{ VideoCategory, Video, Videos };
 pub use permissions::{
     PermissionId,
     PermissionAttribute,
@@ -794,6 +796,8 @@ impl Toornament {
 
         Ok(serde_json::from_reader(response)?)
     }
+
+    //https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos
 }
 
 #[cfg(test)]
