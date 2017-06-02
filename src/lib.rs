@@ -90,6 +90,7 @@ enum Endpoint {
     Matches,
     Participants,
     Permissions,
+    Stages,
 }
 
 lazy_static! {
@@ -103,6 +104,7 @@ lazy_static! {
         m.insert(Endpoint::Matches, "/v1/tournaments/:tournament_id:/matches");
         m.insert(Endpoint::Participants, "/v1/tournaments/:tournament_id:/participants");
         m.insert(Endpoint::Permissions, "/v1/tournaments/:tournament_id:/permissions");
+        m.insert(Endpoint::Stages, "/v1/tournaments/:tournament_id:/stages");
         m
     };
 }
@@ -779,6 +781,18 @@ impl Toornament {
         } else {
             Err(Error::Other("Something went wrong"))
         }
+    }
+
+    /// [Returns a collection of stages from one tournament. The tournament must be public to have
+    /// access to its stages, meaning the tournament organizer must publish it.]
+    /// (https://developer.toornament.com/doc/stages?_locale=en#get:tournaments:tournament_id:stages)
+    pub fn tournament_stages(&self, id: TournamentId) -> Result<Stages> {
+        debug!("Getting tournament stages by tournament id: {:?}", id);
+        let address = get_ep_address(Endpoint::Stages)?.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
+
+        Ok(serde_json::from_reader(response)?)
     }
 }
 
