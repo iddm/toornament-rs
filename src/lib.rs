@@ -87,6 +87,7 @@ enum Endpoint {
     MyTournaments,
     Matches,
     Participants,
+    Permissions,
 }
 
 lazy_static! {
@@ -99,6 +100,7 @@ lazy_static! {
         /// Matches endpoint requires substitution of :tournament_id:
         m.insert(Endpoint::Matches, "/v1/tournaments/:tournament_id:/matches");
         m.insert(Endpoint::Participants, "/v1/tournaments/:tournament_id:/participants");
+        m.insert(Endpoint::Permissions, "/v1/tournaments/:tournament_id:/permissions");
         m
     };
 }
@@ -679,13 +681,103 @@ impl Toornament {
         }
     }
 
-    /*
     /// [Returns a collection of permission from one tournament.]
     /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions)
     pub fn tournament_permissions(&self, id: TournamentId) -> Result<Permissions> {
+        debug!("Getting tournament permissions by tournament id: {:?}", id);
+        let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
 
+        Ok(serde_json::from_reader(response)?)
     }
-    */
+
+    /// [Create a permission for a user on a tournament.]
+    /// (https://developer.toornament.com/doc/permissions?_locale=en#post:tournaments:tournament_id:permissions)
+    pub fn create_tournament_permission(&self,
+                                        id: TournamentId,
+                                        permission: Permission) -> Result<Permission> {
+        debug!("Creating tournament permissions by tournament id: {:?}", id);
+        let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
+        let body = serde_json::to_string(&permission)?;
+        let response = retry(|| self.client.get(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Retrieves a permission of a tournament.]
+    /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions:permission_id)
+    pub fn tournament_permission(&self,
+                                 id: TournamentId,
+                                 permission_id: PermissionId) -> Result<Permission> {
+        debug!("Getting tournament permission by tournament id and permission id: {:?} / {:?}",
+               id,
+               permission_id);
+        let ep = format!("{}/{}",
+                         get_ep_address(Endpoint::Permissions)?,
+                         permission_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Update rights of a permission.]
+    /// (https://developer.toornament.com/doc/permissions?_locale=en#patch:tournaments:tournament_id:permissions:permission_id)
+    pub fn update_tournament_permission_attributes(&self,
+                                                   id: TournamentId,
+                                                   permission_id: PermissionId,
+                                                   attributes: PermissionAttributes)
+        -> Result<Permission> {
+        #[derive(Serialize)]
+        struct WrappedAttributes {
+            attributes: PermissionAttributes,
+        }
+        debug!("Updating tournament permission attributes by tournament id \
+               and permission id: {:?} / {:?}",
+               id,
+               permission_id);
+        let ep = format!("{}/{}",
+                         get_ep_address(Endpoint::Permissions)?,
+                         permission_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let wrapped_attributes = WrappedAttributes { attributes: attributes };
+        let body = serde_json::to_string(&wrapped_attributes)?;
+        let response = retry(|| self.client.patch(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Delete a user permission of a tournament.]
+    /// (https://developer.toornament.com/doc/permissions?_locale=en#delete:tournaments:tournament_id:permissions:permission_id)
+    pub fn delete_tournament_permission(&self,
+                                        id: TournamentId,
+                                        permission_id: PermissionId) -> Result<()> {
+        debug!("Deleting a permission for tournament with id and permission id: {:?} / {:?}",
+               id,
+               permission_id);
+        let ep = format!("{}/{}",
+                         get_ep_address(Endpoint::Permissions)?,
+                         permission_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.delete(&address)
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(Error::Other("Something went wrong"))
+        }
+    }
 }
 
 #[cfg(test)]

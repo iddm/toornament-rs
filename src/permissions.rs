@@ -32,7 +32,7 @@ pub struct PermissionAttributes(pub BTreeSet<PermissionAttribute>);
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Permission {
     /// The permission identifier.
-    pub id: PermissionId,
+    pub id: Option<PermissionId>,
     /// Email of the permitted user.
     pub email: String,
     /// The list of permission of the related user on the tournament.
