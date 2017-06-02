@@ -231,7 +231,7 @@ pub struct Tournaments(pub Vec<Tournament>);
 
 #[cfg(test)]
 mod tests {
-    extern crate serde_json;
+    use ::serde_json;
 
     #[test]
     fn test_stream_parse() {

@@ -4,16 +4,19 @@ use common::Date;
 
 use std::fmt;
 
+/// Date sorting filter
 #[derive(Debug, Clone)]
-pub enum MatchFilterSort {
+pub enum DateSortFilter {
+    /// Sort by date ascending
     DateAscending,
+    /// Sort by date descending
     DateDescending,
 }
-impl fmt::Display for MatchFilterSort {
+impl fmt::Display for DateSortFilter {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            MatchFilterSort::DateAscending => fmt.write_str("date_asc"),
-            MatchFilterSort::DateDescending => fmt.write_str("date_desc"),
+            DateSortFilter::DateAscending => fmt.write_str("date_asc"),
+            DateSortFilter::DateDescending => fmt.write_str("date_desc"),
         }
     }
 }
@@ -30,7 +33,7 @@ pub struct MatchFilter {
     pub has_result: Option<bool>,
     /// Sorts the collection in a particular order. `DateAscending` sort matches from oldest to
     /// newest and `DateDescending` sort matches from newest to oldest.
-    pub sort: Option<MatchFilterSort>,
+    pub sort: Option<DateSortFilter>,
     /// Returns matches that involves the given participant's id.
     pub participant_id: Option<ParticipantId>,
     /// Returns matches from the filtered tournaments.
@@ -49,7 +52,7 @@ impl Default for MatchFilter {
         MatchFilter {
             featured: None,
             has_result: None,
-            sort: Some(MatchFilterSort::DateAscending),
+            sort: Some(DateSortFilter::DateAscending),
             participant_id: None,
             tournament_ids: None,
             with_games: false,
@@ -62,11 +65,42 @@ impl Default for MatchFilter {
 impl MatchFilter {
     builder_o!(featured, bool);
     builder_o!(has_result, bool);
-    builder_o!(sort, MatchFilterSort);
+    builder_o!(sort, DateSortFilter);
     builder_o!(participant_id, ParticipantId);
     builder_o!(tournament_ids, Vec<TournamentId>);
     builder!(with_games, bool);
     builder_o!(before_date, Date);
     builder_o!(after_date, Date);
     builder_o!(page, i64);
+}
+
+/// A filter for tournament participants
+#[derive(Debug, Clone)]
+pub struct TournamentParticipantsFilter {
+    /// When set to `true`, it will include the lineup of the team (works only if the participant 
+    /// is a team).
+    pub with_lineup: bool,
+    /// When set to `true`, it will include the list of custom fields for this participant.
+    pub with_custom_fields: bool,
+    /// Sorts the collection in a particular order. `DateAscending` sort matches from oldest to
+    /// newest and `DateDescending` sort matches from newest to oldest.
+    pub sort: DateSortFilter,
+    /// Page requested of the list.
+    pub page: i64,
+}
+impl Default for TournamentParticipantsFilter {
+    fn default() -> TournamentParticipantsFilter {
+        TournamentParticipantsFilter {
+            with_lineup: false,
+            sort: DateSortFilter::DateAscending,
+            with_custom_fields: false,
+            page: 1i64,
+        }
+    }
+}
+impl TournamentParticipantsFilter {
+    builder!(with_lineup, bool);
+    builder!(sort, DateSortFilter);
+    builder!(with_custom_fields, bool);
+    builder!(page, i64);
 }

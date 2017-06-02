@@ -40,9 +40,18 @@ pub use error::{ Result, Error };
 pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
 pub use games::{ GameNumber, Game, Games };
-pub use participants::{ ParticipantId, ParticipantType, Participant };
+pub use participants::{
+    ParticipantId,
+    ParticipantType,
+    ParticipantLogo,
+    Participant,
+    Participants,
+    CustomFieldType,
+    CustomField,
+    CustomFields,
+};
 pub use disciplines::{ DisciplineId, Discipline, Disciplines, AdditionalFields };
-pub use filters::{ MatchFilter };
+pub use filters::{ DateSortFilter, MatchFilter, TournamentParticipantsFilter };
 pub use tournaments::{
     TournamentId,
     Tournament,
@@ -118,50 +127,58 @@ fn get_ep_address(ep: Endpoint) -> Result<String> {
           .ok_or(Error::Other("Attempted to use unexistent endpoint"))
 }
 
-fn match_filter_to_get_string(f: Option<MatchFilter>) -> String {
-    let f = match f {
-        Some(f) => f,
-        None => return String::default(),
-    };
-    let mut out = Vec::new();
-    match f.featured {
-        Some(f) => out.push(format!("featured={}", if f { 1 } else { 0 })),
-        None => {},
+mod filters_to_string {
+    use ::*;
+
+    pub fn match_filter(f: Option<MatchFilter>) -> String {
+        let f = match f {
+            Some(f) => f,
+            None => return String::default(),
+        };
+        let mut out = Vec::new();
+        match f.featured {
+            Some(f) => out.push(format!("featured={}", if f { 1 } else { 0 })),
+            None => {},
+        }
+        match f.has_result {
+            Some(r) => out.push(format!("has_result={}", if r { 1 } else { 0 })),
+            None => {},
+        }
+        match f.sort {
+            Some(s) => out.push(format!("sort={}", s.to_string())),
+            None => {},
+        }
+        match f.participant_id {
+            Some(i) => out.push(format!("participant_id={}", i.0)),
+            None => {},
+        }
+        match f.tournament_ids {
+            Some(ref i) => out.push(format!("tournament_ids={}",
+                                            i.iter()
+                                             .map(|i| i.0.as_str())
+                                             .collect::<Vec<&str>>()
+                                             .join(","))),
+            None => {},
+        }
+        out.push(format!("with_games={}", if f.with_games { 1 } else { 0 }));
+        match f.before_date {
+            Some(d) => out.push(format!("before_date={}", d)),
+            None => {},
+        }
+        match f.after_date {
+            Some(d) => out.push(format!("after_date={}", d)),
+            None => {},
+        }
+        match f.page {
+            Some(p) => out.push(format!("page={}", p)),
+            None => {},
+        }
+        out.join("&")
     }
-    match f.has_result {
-        Some(r) => out.push(format!("has_result={}", if r { 1 } else { 0 })),
-        None => {},
+
+    pub fn tournament_participants(f: TournamentParticipantsFilter) -> String {
+        String::new()
     }
-    match f.sort {
-        Some(s) => out.push(format!("sort={}", s.to_string())),
-        None => {},
-    }
-    match f.participant_id {
-        Some(i) => out.push(format!("participant_id={}", i.0)),
-        None => {},
-    }
-    match f.tournament_ids {
-        Some(ref i) => out.push(format!("tournament_ids={}",
-                                        i.iter()
-                                         .map(|i| i.0.as_str())
-                                         .collect::<Vec<&str>>()
-                                         .join(","))),
-        None => {},
-    }
-    out.push(format!("with_games={}", if f.with_games { 1 } else { 0 }));
-    match f.before_date {
-        Some(d) => out.push(format!("before_date={}", d)),
-        None => {},
-    }
-    match f.after_date {
-        Some(d) => out.push(format!("after_date={}", d)),
-        None => {},
-    }
-    match f.page {
-        Some(p) => out.push(format!("page={}", p)),
-        None => {},
-    }
-    out.join("&")
 }
 
 /// Main structure. Should be your point of start using the service.
@@ -348,7 +365,7 @@ impl Toornament {
 
         Ok(serde_json::from_reader(response)?)
     }
-    
+
     /// [Retrieve a collection of matches from a specific discipline, filtered and sorted by the
     /// given query parameters. It might be a list of matches from different tournaments, but only
     /// from public tournaments. The matches are returned by 20.]
@@ -358,7 +375,7 @@ impl Toornament {
         debug!("Getting matches by tournament id: {:?}", id);
         let ep = format!("{}?{}",
                          get_ep_address(Endpoint::Matches)?,
-                         match_filter_to_get_string(filter));
+                         filters_to_string::match_filter(filter));
         let address = ep.replace(":tournament_id:", &id.0);
         let response = retry(|| self.client.get(&address)
                                            .header(XApiKey(self.keys.0.clone())))?;
@@ -462,7 +479,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [If you need to make changes on your game data, you are able to do so by patching one 
+    /// [If you need to make changes on your game data, you are able to do so by patching one
     /// or several fields of your game.]
     /// (https://developer.toornament.com/doc/games?#patch:tournaments:tournament_id:matches:match_id:games:number)
     pub fn update_match_game(&self,
@@ -532,18 +549,30 @@ impl Toornament {
 
         Ok(serde_json::from_reader(response)?)
     }
+
+    /// [Returns a collection of participants from one tournament. The tournament must be public
+    /// to have access to its participants, meaning the tournament organizer has published it. The
+    /// participants are returned by 256.]
+    /// (https://developer.toornament.com/doc/participant#get:tournaments:tournament_id:participants)
+    pub fn d() {}
+    // pub fn tournament_participants(&self,
+    //                                id: TournamentId) -> Result<Participants> {
+    //
+    //     filters_to_string::match_filter(filter)
+    // }
+
 }
 
 #[cfg(test)]
 mod tests {
     use ::MatchFilter;
-    use ::match_filter_to_get_string;
+    use ::filters_to_string;
 
     #[test]
     fn test_match_filter_to_get_string() {
         let mut f = MatchFilter::default();
         f.featured(true).has_result(true).page(2i64);
-        assert_eq!(match_filter_to_get_string(None), "");
-        assert_eq!(match_filter_to_get_string(Some(f)), "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
+        assert_eq!(filters_to_string::match_filter(None), "");
+        assert_eq!(filters_to_string::match_filter(Some(f)), "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
     }
 }

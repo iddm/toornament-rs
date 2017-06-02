@@ -101,7 +101,7 @@ pub struct MatchResult {
 
 #[cfg(test)]
 mod tests {
-    extern crate serde_json;
+    use ::serde_json;
 
     #[test]
     fn test_match_parse() {
