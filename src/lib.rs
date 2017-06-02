@@ -156,11 +156,7 @@ fn get_ep_address(ep: Endpoint) -> Result<String> {
 mod filters_to_string {
     use ::*;
 
-    pub fn match_filter(f: Option<MatchFilter>) -> String {
-        let f = match f {
-            Some(f) => f,
-            None => return String::default(),
-        };
+    pub fn match_filter(f: MatchFilter) -> String {
         let mut out = Vec::new();
         match f.featured {
             Some(f) => out.push(format!("featured={}", if f { 1 } else { 0 })),
@@ -414,7 +410,7 @@ impl Toornament {
     /// given query parameters. It might be a list of matches from different tournaments, but only
     /// from public tournaments. The matches are returned by 20.]
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
-    pub fn matches_by_discipline(&self, id: DisciplineId, filter: Option<MatchFilter>)
+    pub fn matches_by_discipline(&self, id: DisciplineId, filter: MatchFilter)
         -> Result<Matches> {
         debug!("Getting matches by tournament id: {:?}", id);
         let ep = format!("{}?{}",
@@ -847,7 +843,6 @@ mod tests {
     fn test_match_filter_to_get_string() {
         let mut f = MatchFilter::default();
         f.featured(true).has_result(true).page(2i64);
-        assert_eq!(filters_to_string::match_filter(None), "");
-        assert_eq!(filters_to_string::match_filter(Some(f)), "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
+        assert_eq!(filters_to_string::match_filter(f), "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
     }
 }
