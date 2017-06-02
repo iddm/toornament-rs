@@ -123,45 +123,45 @@ fn match_filter_to_get_string(f: Option<MatchFilter>) -> String {
         Some(f) => f,
         None => return String::default(),
     };
-    let mut out = String::new();
+    let mut out = Vec::new();
     match f.featured {
-        Some(f) => out.push_str(&format!("&featured={}", if f { 1 } else { 0 })),
+        Some(f) => out.push(format!("featured={}", if f { 1 } else { 0 })),
         None => {},
     }
     match f.has_result {
-        Some(r) => out.push_str(&format!("&has_result={}", if r { 1 } else { 0 })),
+        Some(r) => out.push(format!("has_result={}", if r { 1 } else { 0 })),
         None => {},
     }
     match f.sort {
-        Some(s) => out.push_str(&format!("&sort={}", s.to_string())),
+        Some(s) => out.push(format!("sort={}", s.to_string())),
         None => {},
     }
     match f.participant_id {
-        Some(i) => out.push_str(&format!("&participant_id={}", i.0)),
+        Some(i) => out.push(format!("participant_id={}", i.0)),
         None => {},
     }
     match f.tournament_ids {
-        Some(ref i) => out.push_str(&format!("&tournament_ids={}",
-                                             i.iter()
-                                              .map(|i| i.0.as_str())
-                                              .collect::<Vec<&str>>()
-                                              .join(","))),
+        Some(ref i) => out.push(format!("tournament_ids={}",
+                                        i.iter()
+                                         .map(|i| i.0.as_str())
+                                         .collect::<Vec<&str>>()
+                                         .join(","))),
         None => {},
     }
-    out.push_str(&format!("&with_games={}", if f.with_games { 1 } else { 0 }));
+    out.push(format!("with_games={}", if f.with_games { 1 } else { 0 }));
     match f.before_date {
-        Some(d) => out.push_str(&format!("&before_date={}", d)),
+        Some(d) => out.push(format!("before_date={}", d)),
         None => {},
     }
     match f.after_date {
-        Some(d) => out.push_str(&format!("&after_date={}", d)),
+        Some(d) => out.push(format!("after_date={}", d)),
         None => {},
     }
     match f.page {
-        Some(p) => out.push_str(&format!("&page={}", p)),
+        Some(p) => out.push(format!("page={}", p)),
         None => {},
     }
-    out
+    out.join("&")
 }
 
 /// Main structure. Should be your point of start using the service.
@@ -424,5 +424,19 @@ impl Toornament {
                                            .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
 
         Ok(serde_json::from_reader(response)?)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use ::MatchFilter;
+    use ::match_filter_to_get_string;
+
+    #[test]
+    fn test_match_filter_to_get_string() {
+        let mut f = MatchFilter::default();
+        f.featured(true).has_result(true).page(2i64);
+        assert_eq!(match_filter_to_get_string(None), "");
+        assert_eq!(match_filter_to_get_string(Some(f)), "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
     }
 }
