@@ -37,14 +37,16 @@ mod participants;
 mod permissions;
 mod stages;
 mod videos;
+mod opponents;
 mod common;
 
 pub use error::{ Result, Error };
-pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
+pub use common::{ TeamSize, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
 pub use games::{ GameNumber, Game, Games };
 pub use stages::{ StageNumber, StageType, Stage, Stages };
 pub use videos::{ VideoCategory, Video, Videos };
+pub use opponents::{ Opponent, Opponents, };
 pub use permissions::{
     PermissionId,
     PermissionAttribute,
@@ -319,7 +321,6 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/tournaments#post:tournaments).
     pub fn edit_tournament(&self,
                            tournament: Tournament) -> Result<Tournament> {
-        debug!("Editing tournament: {:#?}", tournament);
         let address;
         let id_is_set = tournament.id.is_some();
         if let Some(id) = tournament.id.clone() {
@@ -332,14 +333,15 @@ impl Toornament {
         let body = serde_json::to_string(&tournament)?;
         let response;
         if id_is_set {
-
-
+            debug!("Editing tournament: {:#?}", tournament);
             response = retry(|| self.client.patch(&address)
                                            .body(body.as_str())
                                            .header(XApiKey(self.keys.0.clone()))
                                            .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
 
         } else {
+            debug!("Creating tournament: {:#?}", tournament);
+            println!("Create body: {}", body);
             response = retry(|| self.client.post(&address)
                                            .body(body.as_str())
                                            .header(XApiKey(self.keys.0.clone()))
@@ -379,7 +381,8 @@ impl Toornament {
     /// sorted by optional query parameters. The tournament must be public to have access to its
     /// matches, meaning the tournament organizer has published it.]
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
-    pub fn matches(&self, id: TournamentId, match_id: Option<MatchId>, with_games: bool) -> Result<Matches> {
+    pub fn matches(&self, id: TournamentId, match_id: Option<MatchId>, with_games: bool)
+        -> Result<Matches> {
         let response = match match_id {
             Some(match_id) => {
                 debug!("Getting matches by tournament id and match id: {:?} / {:?}", id, match_id);

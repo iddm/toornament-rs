@@ -1,5 +1,5 @@
 use matches::MatchStatus;
-use common::Opponents;
+use opponents::Opponents;
 
 /// A game number.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]

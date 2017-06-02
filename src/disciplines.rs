@@ -34,9 +34,11 @@ pub struct Discipline {
     /// (Optional) Sets the minimum and maximum of players in a team.
     /// Example: (4, 8), where `4` is minimal size of a team in the tournament
     /// and `8` is maximal size of a team in the tournament.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub team_size: Option<TeamSize>,
     /// (Optional) Additional fields concerning the discipline.
     /// Note about the special fields in this API: if the field is mentioned, you must use one of the following values.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub additional_fields: Option<AdditionalFields>,
 }
 impl Discipline {

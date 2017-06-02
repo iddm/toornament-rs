@@ -2,7 +2,7 @@ use chrono::{ DateTime, FixedOffset };
 
 use disciplines::DisciplineId;
 use tournaments::TournamentId;
-use common::Opponents;
+use opponents::Opponents;
 use games::Games;
 
 /// Match unique identificator.
@@ -70,6 +70,7 @@ pub struct Match {
     /// List of the opponents involved in this match.
     pub opponents: Opponents,
     /// This property is added when the parameter "with_games" is enabled.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub games: Option<Games>,
 }
 impl Match {

@@ -5,7 +5,6 @@ use serde;
 /// A common type for toornament dates.
 pub type Date = NaiveDate;
 
-use participants::Participant;
 
 macro_rules! enum_number {
     ($name:ident { $($variant:ident = $value:expr, )* }) => {
@@ -73,25 +72,3 @@ enum_number!(MatchResultSimple {
     Draw = 2,
     Loss = 3,
 });
-
-/// An opponent involved in a match.
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Opponent {
-    /// Number of the opponent
-    pub number: i64,
-    /// The participant represented in this opponent.
-    pub participant: Option<Participant>,
-    /// The result of the opponent. This property is only available on "duel" match format.
-    pub result: Option<MatchResultSimple>,
-    /// Rank of the opponent, compared to other opponents' ranks.
-    /// This property is only available on matches of type "ffa".
-    pub rank: Option<i64>,
-    /// The score of this game.
-    pub score: Option<i64>,
-    /// Whether the opponent has forfeited or not.
-    pub forfeit: bool,
-}
-
-/// List of the opponents involved in this match.
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Opponents(pub Vec<Opponent>);

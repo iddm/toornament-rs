@@ -35,6 +35,7 @@ pub struct Video {
     /// Category of the video.
     pub category: VideoCategory,
     /// The match's unique identifier of this video.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub match_id: Option<MatchId>,
 }
 

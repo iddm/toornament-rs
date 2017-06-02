@@ -81,6 +81,7 @@ pub enum MatchFormat {
 pub struct Tournament {
     /// An hexadecimal unique identifier for this tournament.
     /// Example: "5608fd12140ba061298b4569"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<TournamentId>,
     /// This string is a unique identifier of a discipline.
     /// Example: "my_discipline"
@@ -90,20 +91,23 @@ pub struct Tournament {
     pub name: String,
     /// Complete name of this tournament (maximum 80 characters).
     /// Example: "My Weekly Tournament - Long title"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub full_name: Option<String>,
     /// Status of the tournament.
     /// Possible values: setup, running, completed
     pub status: TournamentStatus,
     /// Starting date of the tournament. This value uses the ISO 8601 date containing only the date section.
     /// Example: "2015-09-06"
-
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub date_start: Option<Date>,
     /// Ending date of the tournament. This value uses the ISO 8601 date containing only the date section.
     /// Example: "2015-09-07"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub date_end: Option<Date>,
     /// Time zone of the tournament. This value is represented using the IANA tz database.
     /// Example: "America/Sao_Paulo"
     #[serde(rename = "timezone")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub time_zone: Option<String>,
     /// Whether the tournament is played on internet or not.
     /// Example: true
@@ -113,48 +117,63 @@ pub struct Tournament {
     pub public: bool,
     /// Location (city, address, place of interest) of the tournament.
     /// Example: "London"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<String>,
     /// Country of the tournament. This value uses the ISO 3166-1 alpha-2 country code.
     /// Example: "UK"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
     /// Size of a tournament. Represents the expected number of participants it'll be able to manage.
     /// Example: 16
     pub size: i64,
     /// Type of participants who plays in the tournament.
     /// Possible values: team, single
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub participant_type: Option<ParticipantType>,
     /// Type of matches played in the tournament.
     /// Possible values: duel, ffa
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub match_type: Option<MatchType>,
     /// Tournament organizer: individual, group, association or company.
     /// Example: "Avery Bullock"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub organization: Option<String>,
     /// URL of the website
     /// Example: "http://www.toornament.com"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub website: Option<String>,
     /// User-defined description of the tournament (maximum 1,500 characters).
     /// Example: "My description \n on multiple lines"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     /// User-defined rules of the tournament (maximum 10,000 characters).
     /// Example: "My rules \n on multiple lines"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rules: Option<String>,
     /// User-defined description of the tournament prizes (maximum 1,500 characters).
     /// Example: "1 - 10,000$ \n 2 - 5,000$"
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub prize: Option<String>,
     /// (Optional) If the "participant type" value in this tournament is 'team', specify the smallest and the largest possible team sizes.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub team_size_min: Option<i64>,
     /// (Optional) If the "participant type" value in this tournament is 'team', specify the smallest and the largest possible team sizes.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub team_size_max: Option<i64>,
     /// (Optional) A list of streams
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub streams: Option<Streams>,
     /// Enable or disable the participant check-in in the tournament.
     /// Example: true
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub check_in: Option<bool>,
     /// Enable or disable the participant flag in the tournament.
     /// Example: true
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub participant_nationality: Option<bool>,
     /// Define the default match format for every matches in the tournament.
     /// Possible values: none, one, home_away, bo3, bo5, bo7, bo9, bo11
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub match_format: Option<MatchFormat>,
 }
 impl Tournament {

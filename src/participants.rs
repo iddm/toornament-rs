@@ -86,25 +86,33 @@ pub struct CustomFields(pub Vec<CustomField>);
 #[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Participant {
     /// Unique identifier for this participant.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<ParticipantId>,
     /// Participant name (maximum 40 characters).
     pub name: String,
     /// Logo of the participant.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub logo: Option<ParticipantLogo>,
     /// This property is only available when the participant type is "team".
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lineup: Option<Participants>,
     /// List of public custom fields
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub custom_fields: Option<CustomFields>,
     /// Country of the participant. This property is only available when the "country"
     /// option is enabled for this tournament. This value is represented as an ISO 3166-1
     /// alpha-2 country code.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
     /// Participant email.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
     /// Participant check-in. This property is only available when "check-in" option is
     /// enabled for this tournament. 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub check_in: Option<bool>,
     /// This property is only available when the query parameter 'with_custom_fields' is true.
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub custom_fields_private: Option<CustomFields>,
 }
 
