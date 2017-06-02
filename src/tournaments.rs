@@ -177,7 +177,7 @@ pub struct Tournament {
     pub match_format: Option<MatchFormat>,
 }
 impl Tournament {
-    /// Creates new `Discipline` object.
+    /// Creates new `Tournament` object.
     pub fn new<S: Into<String>>(id: Option<TournamentId>,
                                 discipline: DisciplineId,
                                 name: S,
@@ -200,6 +200,42 @@ impl Tournament {
             country: None,
             size: size,
             participant_type: None,
+            match_type: None,
+            organization: None,
+            website: None,
+            description: None,
+            rules: None,
+            prize: None,
+            team_size_min: None,
+            team_size_max: None,
+            streams: None,
+            check_in: None,
+            participant_nationality: None,
+            match_format: None,
+        }
+    }
+
+    /// A method which creates `Tournament` object for creation (Toornament::edit_tournament)
+    /// purposes.
+    pub fn create<S: Into<String>>(discipline: DisciplineId,
+                                   name: S,
+                                   size: i64,
+                                   participant_type: ParticipantType) -> Tournament {
+        Tournament {
+            id: None,
+            discipline: discipline,
+            name: name.into(),
+            full_name: None,
+            status: TournamentStatus::Setup,
+            date_start: None,
+            date_end: None,
+            time_zone: None,
+            online: true,
+            public: false,
+            location: None,
+            country: None,
+            size: size,
+            participant_type: Some(participant_type),
             match_type: None,
             organization: None,
             website: None,

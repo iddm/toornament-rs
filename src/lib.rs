@@ -341,7 +341,6 @@ impl Toornament {
 
         } else {
             debug!("Creating tournament: {:#?}", tournament);
-            println!("Create body: {}", body);
             response = retry(|| self.client.post(&address)
                                            .body(body.as_str())
                                            .header(XApiKey(self.keys.0.clone()))
@@ -402,7 +401,8 @@ impl Toornament {
                                  if with_games { "1" } else { "0" });
                 let address = ep.replace(":tournament_id:", &id.0);
                 retry(|| self.client.get(&address)
-                                    .header(XApiKey(self.keys.0.clone())))?
+                                    .header(XApiKey(self.keys.0.clone()))
+                                    .header(Authorization(Bearer { token: self.oauth_token.clone() })))?
             },
         };
 

@@ -101,10 +101,8 @@ impl Error {
                 return Error::RateLimited(value.retry_after)
             }
         } else if !status.is_success() {
-            println!("Not success");
-            match ::serde_json::from_str::<ToornamentServiceError>(&body) {
-                Ok(e) => return Error::Toornament(status, e),
-                Err(e) => println!("Error: {:?}", e),
+            if let Ok(e) = ::serde_json::from_str::<ToornamentServiceError>(&body) {
+                return Error::Toornament(status, e)
             }
         }
         Error::Status(status, body)
