@@ -35,12 +35,14 @@ mod games;
 mod filters;
 mod participants;
 mod permissions;
+mod stages;
 mod common;
 
 pub use error::{ Result, Error };
 pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
 pub use games::{ GameNumber, Game, Games };
+pub use stages::{ StageNumber, StageType, Stage, Stages };
 pub use permissions::{
     PermissionId,
     PermissionAttribute,
