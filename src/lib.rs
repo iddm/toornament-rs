@@ -307,7 +307,8 @@ impl Toornament {
                               if with_streams { "1" } else { "0" });
         }
         let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
         if id_is_set {
             Ok(Tournaments(vec![serde_json::from_reader::<_, Tournament>(response)?]))
         } else {
@@ -606,7 +607,8 @@ impl Toornament {
                          filters_to_string::tournament_participants(filter));
         let address = ep.replace(":tournament_id:", &id.0);
         let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -648,9 +650,9 @@ impl Toornament {
 
     /// [Returns detailed information about one participant.]
     /// (https://developer.toornament.com/doc/participants?_locale=en#get:tournaments:tournament_id:participants:id)
-    pub fn get_tournament_participant(&self,
-                                      id: TournamentId,
-                                      participant_id: ParticipantId) -> Result<Participant> {
+    pub fn tournament_participant(&self,
+                                  id: TournamentId,
+                                  participant_id: ParticipantId) -> Result<Participant> {
         debug!("Getting tournament participant by tournament id and participant id: {:?} / {:?}",
                id,
                participant_id);
@@ -846,6 +848,7 @@ mod tests {
     fn test_match_filter_to_get_string() {
         let mut f = MatchFilter::default();
         f.featured(true).has_result(true).page(2i64);
-        assert_eq!(filters_to_string::match_filter(f), "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
+        assert_eq!(filters_to_string::match_filter(f),
+                   "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
     }
 }

@@ -16,13 +16,17 @@ pub enum ParticipantType {
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct ParticipantLogo {
     /// Url to a picture of 48x48px.
-    pub icon_large_square: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub icon_large_square: Option<String>,
     /// Url to a picture of 100x100px.
-    pub extra_small_square: String,
-    /// Url to a picture of 200x200px.
-    pub medium_small_square: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extra_small_square: Option<String>,
+    /// Url to a picture of 200x200px.>
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub medium_small_square: Option<String>,
     /// Url to a picture of 400x400px.
-    pub medium_large_square: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub medium_large_square: Option<String>,
 }
 
 /// A type of a participant's custom field
@@ -114,6 +118,17 @@ pub struct Participant {
     /// This property is only available when the query parameter 'with_custom_fields' is true.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom_fields_private: Option<CustomFields>,
+}
+impl Participant {
+    builder_o!(id, ParticipantId);
+    builder!(name, String);
+    builder_o!(logo, ParticipantLogo);
+    builder_o!(lineup, Participants);
+    builder_o!(custom_fields, CustomFields);
+    builder_o!(country, String);
+    builder_o!(email, String);
+    builder_o!(check_in, bool);
+    builder_o!(custom_fields_private, CustomFields);
 }
 
 /// A list of participants
