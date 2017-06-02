@@ -1,5 +1,7 @@
 use matches::MatchId;
 
+use std::fmt;
+
 /// Tournament video category
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -10,6 +12,15 @@ pub enum VideoCategory {
     Highlight,
     /// Bonus video
     Bonus,
+}
+impl fmt::Display for VideoCategory {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            VideoCategory::Replay => fmt.write_str("replay"),
+            VideoCategory::Highlight => fmt.write_str("hightlight"),
+            VideoCategory::Bonus => fmt.write_str("bonus"),
+        }
+    }
 }
 
 /// A tournament video

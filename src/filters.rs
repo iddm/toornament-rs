@@ -1,5 +1,6 @@
 use participants::ParticipantId;
 use tournaments::TournamentId;
+use videos::VideoCategory;
 use common::Date;
 
 use std::fmt;
@@ -17,6 +18,23 @@ impl fmt::Display for DateSortFilter {
         match *self {
             DateSortFilter::DateAscending => fmt.write_str("date_asc"),
             DateSortFilter::DateDescending => fmt.write_str("date_desc"),
+        }
+    }
+}
+
+/// Create date sorting filter
+#[derive(Debug, Clone)]
+pub enum CreateDateSortFilter {
+    /// Sort by date ascending
+    CreatedAscending,
+    /// Sort by date descending
+    CreatedDescending,
+}
+impl fmt::Display for CreateDateSortFilter {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            CreateDateSortFilter::CreatedAscending => fmt.write_str("created_asc"),
+            CreateDateSortFilter::CreatedDescending => fmt.write_str("created_desc"),
         }
     }
 }
@@ -103,4 +121,30 @@ impl TournamentParticipantsFilter {
     builder!(sort, DateSortFilter);
     builder!(with_custom_fields, bool);
     builder!(page, i64);
+}
+
+/// A filter for tournament videos
+#[derive(Debug, Clone)]
+pub struct TournamentVideosFilter {
+    /// Category of the videos.
+    pub category: Option<VideoCategory>,
+    /// Sorts the collection in a particular order. `CreatedAscending` sorts the videos from older 
+    /// to newer; `CreatedDescending` sorts the videos from newer to older.
+    pub sort: CreateDateSortFilter,
+    /// Page requested of the list.
+    pub page: Option<i64>,
+}
+impl Default for TournamentVideosFilter {
+    fn default() -> TournamentVideosFilter {
+        TournamentVideosFilter {
+            category: None,
+            sort: CreateDateSortFilter::CreatedAscending,
+            page: None,
+        }
+    }
+}
+impl TournamentVideosFilter {
+    builder_o!(category, VideoCategory);
+    builder!(sort, CreateDateSortFilter);
+    builder_o!(page, i64);
 }

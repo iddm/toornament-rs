@@ -63,7 +63,13 @@ pub use participants::{
     CustomFields,
 };
 pub use disciplines::{ DisciplineId, Discipline, Disciplines, AdditionalFields };
-pub use filters::{ DateSortFilter, MatchFilter, TournamentParticipantsFilter };
+pub use filters::{
+    CreateDateSortFilter,
+    DateSortFilter,
+    MatchFilter,
+    TournamentParticipantsFilter,
+    TournamentVideosFilter,
+};
 pub use tournaments::{
     TournamentId,
     Tournament,
@@ -93,6 +99,7 @@ enum Endpoint {
     Participants,
     Permissions,
     Stages,
+    Videos,
 }
 
 lazy_static! {
@@ -107,6 +114,7 @@ lazy_static! {
         m.insert(Endpoint::Participants, "/v1/tournaments/:tournament_id:/participants");
         m.insert(Endpoint::Permissions, "/v1/tournaments/:tournament_id:/permissions");
         m.insert(Endpoint::Stages, "/v1/tournaments/:tournament_id:/stages");
+        m.insert(Endpoint::Videos, "/v1/tournaments/:tournament_id:/videos");
         m
     };
 }
@@ -200,6 +208,20 @@ mod filters_to_string {
                 f.with_custom_fields as u64,
                 f.sort.to_string(),
                 f.page)
+    }
+
+    pub fn tournament_videos(f: TournamentVideosFilter) -> String {
+        let mut out = Vec::new();
+        match f.category {
+            Some(c) => out.push(format!("category={}", c.to_string())),
+            None => {},
+        }
+        out.push(format!("sort={}", f.sort.to_string()));
+        match f.page {
+            Some(p) => out.push(format!("page={}", p)),
+            None => {},
+        }
+        out.join("&")
     }
 }
 
@@ -797,7 +819,23 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    //https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos
+    /// [Returns a collection of videos from one tournament. The collection may be filtered and
+    /// sorted by optional query parameters. The tournament must be public to have access to its
+    /// videos, meaning the tournament organizer has published it. The videos are returned by 20.]
+    /// (https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos)
+    pub fn tournament_videos(&self,
+                             id: TournamentId,
+                             filter: TournamentVideosFilter) -> Result<Videos> {
+        debug!("Getting tournament videos by tournament id: {:?}", id);
+        let ep = format!("{}?{}",
+                         get_ep_address(Endpoint::Videos)?,
+                         filters_to_string::tournament_videos(filter));
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
 }
 
 #[cfg(test)]
