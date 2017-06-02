@@ -34,12 +34,20 @@ mod disciplines;
 mod games;
 mod filters;
 mod participants;
+mod permissions;
 mod common;
 
 pub use error::{ Result, Error };
 pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
 pub use games::{ GameNumber, Game, Games };
+pub use permissions::{
+    PermissionId,
+    PermissionAttribute,
+    PermissionAttributes,
+    Permission,
+    Permissions,
+};
 pub use participants::{
     ParticipantId,
     ParticipantType,
@@ -670,6 +678,14 @@ impl Toornament {
             Err(Error::Other("Something went wrong"))
         }
     }
+
+    /*
+    /// [Returns a collection of permission from one tournament.]
+    /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions)
+    pub fn tournament_permissions(&self, id: TournamentId) -> Result<Permissions> {
+
+    }
+    */
 }
 
 #[cfg(test)]
