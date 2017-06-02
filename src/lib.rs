@@ -78,6 +78,7 @@ enum Endpoint {
     PublicTournaments,
     MyTournaments,
     Matches,
+    Participants,
 }
 
 lazy_static! {
@@ -89,6 +90,7 @@ lazy_static! {
         m.insert(Endpoint::MyTournaments, "/v1/me/tournaments");
         /// Matches endpoint requires substitution of :tournament_id:
         m.insert(Endpoint::Matches, "/v1/tournaments/:tournament_id:/matches");
+        m.insert(Endpoint::Participants, "/v1/tournaments/:tournament_id:/participants");
         m
     };
 }
@@ -177,7 +179,11 @@ mod filters_to_string {
     }
 
     pub fn tournament_participants(f: TournamentParticipantsFilter) -> String {
-        String::new()
+        format!("with_lineup={}&with_custom_fields={}&sort={}&page={}",
+                f.with_lineup as u64,
+                f.with_custom_fields as u64,
+                f.sort.to_string(),
+                f.page)
     }
 }
 
@@ -554,13 +560,116 @@ impl Toornament {
     /// to have access to its participants, meaning the tournament organizer has published it. The
     /// participants are returned by 256.]
     /// (https://developer.toornament.com/doc/participant#get:tournaments:tournament_id:participants)
-    pub fn d() {}
-    // pub fn tournament_participants(&self,
-    //                                id: TournamentId) -> Result<Participants> {
-    //
-    //     filters_to_string::match_filter(filter)
-    // }
+    pub fn tournament_participants(&self,
+                                   id: TournamentId,
+                                   filter: TournamentParticipantsFilter) -> Result<Participants> {
+        debug!("Getting tournament participants by tournament id: {:?}", id);
+        let ep = format!("{}?{}",
+                         get_ep_address(Endpoint::Participants)?,
+                         filters_to_string::tournament_participants(filter));
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
 
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Create a participant in a tournament.]
+    /// (https://developer.toornament.com/doc/participants?#post:tournaments:tournament_id:participants)
+    pub fn create_tournament_participant(&self,
+                                         id: TournamentId,
+                                         participant: Participant) -> Result<Participant> {
+        debug!("Creating a participant for tournament with id: {:?}", id);
+        let address = get_ep_address(Endpoint::Participants)?
+                      .replace(":tournament_id:", &id.0);
+        let body = serde_json::to_string(&participant)?;
+        let response = retry(|| self.client.post(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Create a list of participants in a tournament. If any participant already exists he will
+    /// be erased.]
+    /// (https://developer.toornament.com/doc/participants?_locale=en#put:tournaments:tournament_id:participants)
+    pub fn update_tournament_participants(&self,
+                                          id: TournamentId,
+                                          participants: Participants) -> Result<Participants> {
+        debug!("Creating a list of participants for tournament with id: {:?}", id);
+        let address = get_ep_address(Endpoint::Participants)?
+                      .replace(":tournament_id:", &id.0);
+        let body = serde_json::to_string(&participants)?;
+        let response = retry(|| self.client.put(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Returns detailed information about one participant.]
+    /// (https://developer.toornament.com/doc/participants?_locale=en#get:tournaments:tournament_id:participants:id)
+    pub fn get_tournament_participant(&self,
+                                      id: TournamentId,
+                                      participant_id: ParticipantId) -> Result<Participant> {
+        debug!("Getting tournament participant by tournament id and participant id: {:?} / {:?}",
+               id,
+               participant_id);
+        let ep = format!("{}/{}",
+                         get_ep_address(Endpoint::Participants)?,
+                         participant_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Update some of the editable information on a participant.]
+    /// (https://developer.toornament.com/doc/participants?_locale=en#patch:tournaments:tournament_id:participants:id)
+    pub fn update_tournament_participant(&self,
+                                         id: TournamentId,
+                                         participant_id: ParticipantId,
+                                         participant: Participant) -> Result<Participant> {
+        debug!("Updating a participant for tournament with id and participant id: {:?} / {:?}",
+               id,
+               participant_id);
+        let ep = format!("{}/{}",
+                         get_ep_address(Endpoint::Participants)?,
+                         participant_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let body = serde_json::to_string(&participant)?;
+        let response = retry(|| self.client.patch(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Deletes one participant.]
+    /// (https://developer.toornament.com/doc/participants?_locale=en#delete:tournaments:tournament_id:participants:id)
+    pub fn delete_tournament_participant(&self,
+                                         id: TournamentId,
+                                         participant_id: ParticipantId) -> Result<()> {
+        debug!("Deleting a participant for tournament with id and participant id: {:?} / {:?}",
+               id,
+               participant_id);
+        let ep = format!("{}/{}",
+                         get_ep_address(Endpoint::Participants)?,
+                         participant_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.delete(&address)
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        if response.status().is_success() {
+            Ok(())
+        } else {
+            Err(Error::Other("Something went wrong"))
+        }
+    }
 }
 
 #[cfg(test)]
