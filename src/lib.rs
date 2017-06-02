@@ -661,7 +661,8 @@ impl Toornament {
                          participant_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
         let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
 
         Ok(serde_json::from_reader(response)?)
     }

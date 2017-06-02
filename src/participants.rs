@@ -121,7 +121,7 @@ pub struct Participant {
 }
 impl Participant {
     builder_o!(id, ParticipantId);
-    builder!(name, String);
+    builder_s!(name);
     builder_o!(logo, ParticipantLogo);
     builder_o!(lineup, Participants);
     builder_o!(custom_fields, CustomFields);

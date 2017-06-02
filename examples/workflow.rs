@@ -3,7 +3,22 @@ extern crate toornament;
 use toornament::*;
 
 fn main() {
-    let toornament = Toornament::with_application("s", "s", "s").unwrap();
+    // let toornament = Toornament::with_application("API_TOKEN", "CLIENT_ID", "CLIENT_SECRET").unwrap();
+    
+    // let id = TournamentId("435959567336932466".to_owned());
+    // let t = toornament.tournaments(Some(id.clone()), false).unwrap();
+    // println!("Tournament: {:?}", t);
+    // let ps = toornament.tournament_participants(id.clone(), TournamentParticipantsFilter::default());
+    // println!("Participants: {:?}", ps);
+    // let mut pc = Participant::default();
+    // pc.name("sd");
+    // let pid = ParticipantId("442607506370207744".to_owned());
+    // // let p = toornament.create_tournament_participant(id.clone(), pc);
+    // // println!("Participant created: {:?}", p);
+    // let p = toornament.tournament_participant(id.clone(), pid.clone());
+    // println!("Participant got: {:?}", p);
+
+
     println!("Disciplines: {:?}\n", toornament.disciplines(None));
     println!("Disciplines with id=\"wwe2k17\": {:?}\n", toornament.disciplines(Some(DisciplineId("wwe2k17".to_owned()))));
     let mut tournament = Tournament::create(DisciplineId("wwe2k17".to_owned()),
