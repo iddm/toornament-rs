@@ -39,7 +39,7 @@ mod common;
 pub use error::{ Result, Error };
 pub use common::{ TeamSize, Opponent, Opponents, MatchResultSimple, Date };
 pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
-pub use games::{ Game, Games };
+pub use games::{ GameNumber, Game, Games };
 pub use participants::{ ParticipantId, ParticipantType, Participant };
 pub use disciplines::{ DisciplineId, Discipline, Disciplines, AdditionalFields };
 pub use filters::{ MatchFilter };
@@ -356,10 +356,10 @@ impl Toornament {
     pub fn matches_by_discipline(&self, id: DisciplineId, filter: Option<MatchFilter>)
         -> Result<Matches> {
         debug!("Getting matches by tournament id: {:?}", id);
-        let address = format!("{}/{}/matches?{}",
-                              get_ep_address(Endpoint::Matches)?,
-                              id.0,
-                              match_filter_to_get_string(filter));
+        let ep = format!("{}?{}",
+                         get_ep_address(Endpoint::Matches)?,
+                         match_filter_to_get_string(filter));
+        let address = ep.replace(":tournament_id:", &id.0);
         let response = retry(|| self.client.get(&address)
                                            .header(XApiKey(self.keys.0.clone())))?;
 
@@ -375,10 +375,8 @@ impl Toornament {
         debug!("Updating a match result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let address = format!("{}/{}/matches/{}",
-                              get_ep_address(Endpoint::Matches)?,
-                              id.0,
-                              match_id.0);
+        let ep = format!("{}/{}", get_ep_address(Endpoint::Matches)?, match_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&updated_match)?;
         let response = retry(|| self.client.patch(&address)
                                            .body(body.as_str())
@@ -394,10 +392,8 @@ impl Toornament {
         debug!("Getting match result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let address = format!("{}/{}/matches/{}/result",
-                              get_ep_address(Endpoint::Matches)?,
-                              id.0,
-                              match_id.0);
+        let ep = format!("{}/{}/result", get_ep_address(Endpoint::Matches)?, match_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
         let response = retry(|| self.client.get(&address)
                                            .header(XApiKey(self.keys.0.clone())))?;
 
@@ -413,10 +409,121 @@ impl Toornament {
         debug!("Setting match result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let address = format!("{}/{}/matches/{}/result",
-                              get_ep_address(Endpoint::Matches)?,
-                              id.0,
-                              match_id.0);
+        let ep = format!("{}/{}/result", get_ep_address(Endpoint::Matches)?, match_id.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let body = serde_json::to_string(&result)?;
+        let response = retry(|| self.client.put(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Returns a collection of games from one match.]
+    /// (https://developer.toornament.com/doc/games#get:tournaments:tournament_id:matches:match_id:games)
+    pub fn match_games(&self,
+                       id: TournamentId,
+                       match_id: MatchId,
+                       with_stats: bool) -> Result<Games> {
+        debug!("Getting match games by tournament id and match id: {:?} / {:?}",
+               id,
+               match_id);
+        let ep = format!("{}/{}/games?with_stats={}",
+                         get_ep_address(Endpoint::Matches)?,
+                         match_id.0,
+                         if with_stats { 1 } else { 0 });
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Returns detailed information about one game.]
+    /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number)
+    pub fn match_game(&self,
+                      id: TournamentId,
+                      match_id: MatchId,
+                      game_number: GameNumber,
+                      with_stats: bool) -> Result<Game> {
+        debug!("Getting match game in details by tournament id and match id: {:?} / {:?}",
+               id,
+               match_id);
+        let ep = format!("{}/{}/games/{}?with_stats={}",
+                         get_ep_address(Endpoint::Matches)?,
+                         match_id.0,
+                         game_number.0,
+                         if with_stats { 1 } else { 0 });
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [If you need to make changes on your game data, you are able to do so by patching one 
+    /// or several fields of your game.]
+    /// (https://developer.toornament.com/doc/games?#patch:tournaments:tournament_id:matches:match_id:games:number)
+    pub fn update_match_game(&self,
+                             id: TournamentId,
+                             match_id: MatchId,
+                             game_number: GameNumber,
+                             game: Game) -> Result<Game> {
+        debug!("Updating match game by tournament id and match id: {:?} / {:?}",
+               id,
+               match_id);
+        let ep = format!("{}/{}/games/{}",
+                         get_ep_address(Endpoint::Matches)?,
+                         match_id.0,
+                         game_number.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let body = serde_json::to_string(&game)?;
+        let response = retry(|| self.client.patch(&address)
+                                           .body(body.as_str())
+                                           .header(XApiKey(self.keys.0.clone()))
+                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Returns detailed result about one specific game.]
+    /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number:result)
+    pub fn match_game_result(&self,
+                             id: TournamentId,
+                             match_id: MatchId,
+                             game_number: GameNumber) -> Result<MatchResult> {
+        debug!("Getting match game result by tournament id and match id: {:?} / {:?}",
+               id,
+               match_id);
+        let ep = format!("{}/{}/games/{}/result",
+                         get_ep_address(Endpoint::Matches)?,
+                         match_id.0,
+                         game_number.0);
+        let address = ep.replace(":tournament_id:", &id.0);
+        let response = retry(|| self.client.get(&address)
+                                           .header(XApiKey(self.keys.0.clone())))?;
+
+        Ok(serde_json::from_reader(response)?)
+    }
+
+    /// [Updates or creates detailed result about one game.]
+    /// (https://developer.toornament.com/doc/games?#put:tournaments:tournament_id:matches:match_id:games:number:result)
+    pub fn update_match_game_result(&self,
+                                    id: TournamentId,
+                                    match_id: MatchId,
+                                    game_number: GameNumber,
+                                    result: MatchResult,
+                                    update_match: bool) -> Result<MatchResult> {
+        debug!("Setting match game result by tournament id and match id: {:?} / {:?}",
+               id,
+               match_id);
+        let ep = format!("{}/{}/games/{}/result?update_match={}",
+                         get_ep_address(Endpoint::Matches)?,
+                         match_id.0,
+                         game_number.0,
+                         if update_match { 1 } else { 0 });
+        let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&result)?;
         let response = retry(|| self.client.put(&address)
                                            .body(body.as_str())
