@@ -302,6 +302,14 @@ impl Toornament {
         })
     }
 
+    /// Consumes `Toornament` object and sets timeout to it
+    pub fn timeout(mut self, seconds: u64) -> Toornament {
+        use std::time::Duration;
+
+        self.client.timeout(Duration::from_secs(seconds));
+        self
+    }
+
     /// [Returns either a collection of disciplines]
     /// (https://developer.toornament.com/doc/disciplines#get:disciplines) if id is None or
     /// [a disciplines with the detail of his features]
