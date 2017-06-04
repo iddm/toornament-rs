@@ -39,6 +39,17 @@ pub struct Permission {
     /// The list of permission of the related user on the tournament.
     pub attributes: PermissionAttributes,
 }
+impl Permission {
+    /// Create permission object for adding it to a tournament
+    /// (Toornament::create_tournament_permission)
+    pub fn create<S: Into<String>>(email: S, attributes: PermissionAttributes) -> Permission {
+        Permission {
+            id: None,
+            email: email.into(),
+            attributes: attributes,
+        }
+    }
+}
 
 /// A list of permissions
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]

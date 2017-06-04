@@ -120,6 +120,15 @@ pub struct Participant {
     pub custom_fields_private: Option<CustomFields>,
 }
 impl Participant {
+    /// Create participant object for adding for a tournament
+    /// (Toornament::create_tournament_participant)
+    pub fn create<S: Into<String>>(name: S) -> Participant {
+        Participant {
+            name: name.into(),
+            ..Default::default()
+        }
+    }
+
     builder_o!(id, ParticipantId);
     builder_s!(name);
     builder_o!(logo, ParticipantLogo);

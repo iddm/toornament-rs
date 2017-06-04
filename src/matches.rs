@@ -32,6 +32,35 @@ pub enum MatchStatus {
     Completed
 }
 
+/// A Match format enumeration.
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+pub enum MatchFormat {
+    /// Needs description
+    #[serde(rename = "none")]
+    None,
+    /// Needs description
+    #[serde(rename = "one")]
+    One,
+    /// Needs description
+    #[serde(rename = "home_away")]
+    HomeAway,
+    /// Best of 3
+    #[serde(rename = "bo3")]
+    BestOf3,
+    /// Best of 5
+    #[serde(rename = "bo5")]
+    BestOf5,
+    /// Best of 7
+    #[serde(rename = "bo7")]
+    BestOf7,
+    /// Best of 9
+    #[serde(rename = "bo9")]
+    BestOf9,
+    /// Best of 11
+    #[serde(rename = "bo11")]
+    BestOf11,
+}
+
 /// Tournament or discipline match definition.
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Match {

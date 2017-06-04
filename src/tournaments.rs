@@ -1,7 +1,8 @@
-use matches::MatchType;
+use matches::{ MatchFormat, MatchType };
 use common::Date;
 use disciplines::DisciplineId;
 use participants::ParticipantType;
+use streams::Streams;
 
 
 /// A tournament identity.
@@ -20,60 +21,6 @@ pub enum TournamentStatus {
     Pending,
     /// Indicates all matches have a result
     Completed,
-}
-
-/// A stream identity.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct StreamId(pub String);
-
-/// A stream object.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Stream {
-    /// An hexadecimal unique identifier for this stream.
-    /// Example: "56742bc7cc3c17ee608b4567"
-    pub id: StreamId,
-    /// Title of the stream.
-    /// Example: "DreamhackCS"
-    pub name: String,
-    /// Url of the stream.
-    /// Example: "http://www.twitch.tv/dreamhackcs"
-    pub url: String,
-    /// Language code of the stream content. This value is represented as an ISO 639-1 code.
-    /// Example: "en"
-    pub language: String,
-}
-
-/// A list of `Stream` objects.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub struct Streams(pub Vec<Stream>);
-
-/// A Match format enumeration.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-pub enum MatchFormat {
-    /// Needs description
-    #[serde(rename = "none")]
-    None,
-    /// Needs description
-    #[serde(rename = "one")]
-    One,
-    /// Needs description
-    #[serde(rename = "home_away")]
-    HomeAway,
-    /// Best of 3
-    #[serde(rename = "bo3")]
-    BestOf3,
-    /// Best of 5
-    #[serde(rename = "bo5")]
-    BestOf5,
-    /// Best of 7
-    #[serde(rename = "bo7")]
-    BestOf7,
-    /// Best of 9
-    #[serde(rename = "bo9")]
-    BestOf9,
-    /// Best of 11
-    #[serde(rename = "bo11")]
-    BestOf11,
 }
 
 /// A tournament object.
@@ -286,11 +233,10 @@ pub struct Tournaments(pub Vec<Tournament>);
 
 #[cfg(test)]
 mod tests {
-    use ::serde_json;
+    use ::*;
 
     #[test]
     fn test_stream_parse() {
-        use tournaments::Stream;
         let string = r#"
         {
             "id": "56742bc7cc3c17ee608b4567",
@@ -308,13 +254,6 @@ mod tests {
 
     #[test]
     fn test_tournament_parse() {
-        use matches::MatchType;
-        use tournaments::{ ParticipantType,
-            MatchFormat,
-            Tournament,
-            TournamentStatus,
-            StreamId,
-        };
         use chrono::Datelike;
 
         let string = r#"

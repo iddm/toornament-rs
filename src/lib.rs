@@ -38,11 +38,20 @@ mod permissions;
 mod stages;
 mod videos;
 mod opponents;
+mod streams;
 mod common;
 
 pub use error::{ Result, Error };
 pub use common::{ TeamSize, MatchResultSimple, Date };
-pub use matches::{ Match, MatchId, Matches, MatchType, MatchResult, MatchStatus };
+pub use matches::{
+    Match,
+    MatchId,
+    Matches,
+    MatchType,
+    MatchResult,
+    MatchStatus,
+    MatchFormat,
+};
 pub use games::{ GameNumber, Game, Games };
 pub use stages::{ StageNumber, StageType, Stage, Stages };
 pub use videos::{ VideoCategory, Video, Videos };
@@ -78,7 +87,7 @@ pub use tournaments::{
     Tournaments,
     TournamentStatus,
 };
-
+pub use streams:: { StreamId, Stream, Streams };
 
 /// Macro only for internal use with the `Toornament` object (relies on it's fields)
 macro_rules! request {
@@ -262,6 +271,16 @@ impl Toornament {
     /// (https://developer.toornament.com/applications/) (You must be logged in to open the page).
     /// This method connects to the toornament service and if there is a error it returns the `Error`
     /// object and on success it returns `Toornament` object.
+    /// 
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET");
+    /// assert!(t.is_ok());
+    /// ```
     pub fn with_application<S: Into<String>>(api_token: S,
                                              client_id: S,
                                              client_secret: S) -> Result<Toornament> {
@@ -287,6 +306,22 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/disciplines#get:disciplines) if id is None or
     /// [a disciplines with the detail of his features]
     /// (https://developer.toornament.com/doc/disciplines#get:disciplines:id)
+    /// 
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Getting all disciplines
+    /// let all_disciplines: Disciplines = t.disciplines(None).unwrap();
+    /// // Get discipline by it's id
+    /// let wwe2k17_discipline = t.disciplines(Some(DisciplineId("wwe2k17".to_owned()))).unwrap();
+    /// assert_eq!(wwe2k17_discipline.0.len(), 1);
+    /// assert_eq!(wwe2k17_discipline.0.first().unwrap().id,
+    /// DisciplineId("wwe2k17".to_owned()));
+    /// ```
     pub fn disciplines(&self, id: Option<DisciplineId>) -> Result<Disciplines> {
         let address;
         let id_is_set = id.is_some();
@@ -312,6 +347,22 @@ impl Toornament {
     /// visible.](https://developer.toornament.com/doc/tournaments#get:tournaments) if id is None or
     /// [a detailed information about one tournament. The tournament must be public.]
     /// (https://developer.toornament.com/doc/tournaments#get:tournaments:id)
+    /// 
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Getting all tournaments
+    /// let all_tournaments: Tournaments = t.tournaments(None, true).unwrap();
+    /// // Get tournament by it's id
+    /// let tournament = t.tournaments(Some(TournamentId("1".to_owned())), true).unwrap();
+    /// assert_eq!(tournament.0.len(), 1);
+    /// assert_eq!(tournament.0.first().unwrap().id,
+    /// Some(TournamentId("1".to_owned())));
+    /// ```
     pub fn tournaments(&self,
                        id: Option<TournamentId>,
                        with_streams: bool) -> Result<Tournaments> {
@@ -341,6 +392,25 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/tournaments#patch:tournaments:id) if `tournament.id`
     /// is set otherwise [creates a tournament]
     /// (https://developer.toornament.com/doc/tournaments#post:tournaments).
+    /// 
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get tournament by it's id
+    /// let tournaments = t.tournaments(Some(TournamentId("1".to_owned())), true).unwrap();
+    /// assert_eq!(tournaments.0.len(), 1);
+    /// let mut tournament = tournaments.0.first().unwrap().clone();
+    /// assert_eq!(tournament.id, Some(TournamentId("1".to_owned())));
+    /// tournament.website(Some("https://toornament.com".to_owned()));
+    /// // Editing tournament by calling the appropriate method
+    /// let tournament = t.edit_tournament(tournament.clone()).unwrap();
+    /// assert_eq!(tournament.website,
+    /// Some("https://toornament.com".to_owned()));
+    /// ```
     pub fn edit_tournament(&self,
                            tournament: Tournament) -> Result<Tournament> {
         let address;
@@ -367,6 +437,17 @@ impl Toornament {
 
     /// [Deletes a tournament, its participants and all its matches]
     /// (https://developer.toornament.com/doc/tournaments#delete:tournaments:id).
+    /// 
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Deleting tournament with id = "1"
+    /// assert!(t.delete_tournament(TournamentId("1".to_owned())).is_ok());
+    /// ```
     pub fn delete_tournament(&self,
                              id: TournamentId) -> Result<()> {
         debug!("Deleting tournament by id: {:?}", id);
@@ -381,6 +462,17 @@ impl Toornament {
     /// The result is filtered, sorted and paginated by the given query parameters. A maximum of
     /// 50 tournaments is returned (per page).]
     /// (https://developer.toornament.com/doc/tournaments#get:metournaments)
+    /// 
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get all my tournaments
+    /// let tournaments = t.my_tournaments().unwrap();
+    /// ```
     pub fn my_tournaments(&self) -> Result<Tournaments> {
         debug!("Getting all tournaments");
         let address = get_ep_address(Endpoint::MyTournaments)?;
@@ -392,6 +484,19 @@ impl Toornament {
     /// sorted by optional query parameters. The tournament must be public to have access to its
     /// matches, meaning the tournament organizer has published it.]
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get all matches of a tournament with id = "1"
+    /// let matches = t.matches(TournamentId("1".to_owned()), None, true).unwrap();
+    /// // Get match with match id = "2" of a tournament with id = "1"
+    /// let matches = t.matches(TournamentId("1".to_owned()), Some(MatchId("2".to_owned())), true).unwrap();
+    /// ```
     pub fn matches(&self, id: TournamentId, match_id: Option<MatchId>, with_games: bool)
         -> Result<Matches> {
         let response = match match_id {
@@ -421,6 +526,17 @@ impl Toornament {
     /// given query parameters. It might be a list of matches from different tournaments, but only
     /// from public tournaments. The matches are returned by 20.]
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get all matches by a discipline with id = "1" with default filter
+    /// let matches = t.matches_by_discipline(DisciplineId("1".to_owned()), MatchFilter::default()).unwrap();
+    /// ```
     pub fn matches_by_discipline(&self, id: DisciplineId, filter: MatchFilter)
         -> Result<Matches> {
         debug!("Getting matches by tournament id: {:?}", id);
@@ -435,6 +551,25 @@ impl Toornament {
 
     /// [If you need to make changes on your match data, you are able to do so by patching one or
     /// several fields of your match.](https://developer.toornament.com/doc/matches#patch:tournaments:tournament_id:matches:id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a match with id = "2" of a tournament with id = "1"
+    /// let matches = t.matches(TournamentId("1".to_owned()),
+    ///                         Some(MatchId("2".to_owned())),
+    ///                         true).unwrap();
+    /// let mut match_to_edit = matches.0.first().unwrap().clone();
+    /// match_to_edit.number(2u64);
+    /// match_to_edit = t.update_match(TournamentId("1".to_owned()),
+    ///                                MatchId("2".to_owned()),
+    ///                                match_to_edit).unwrap();
+    /// assert_eq!(match_to_edit.number, 2u64);
+    /// ```
     pub fn update_match(&self,
                         id: TournamentId,
                         match_id: MatchId,
@@ -452,6 +587,18 @@ impl Toornament {
 
     /// [Returns detailed result about one match.]
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches:id:result)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a match result of a match with id = "2" of a tournament with id = "1"
+    /// let result = t.match_result(TournamentId("1".to_owned()),
+    ///                             MatchId("2".to_owned())).unwrap();
+    /// ```
     pub fn match_result(&self, id: TournamentId, match_id: MatchId) -> Result<MatchResult> {
         debug!("Getting match result by tournament id and match id: {:?} / {:?}",
                id,
@@ -465,6 +612,24 @@ impl Toornament {
 
     /// [Update or create detailed result about one match.]
     /// (https://developer.toornament.com/doc/matches#put:tournaments:tournament_id:matches:id:result)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Define a result
+    /// let result = MatchResult {
+    ///     status: MatchStatus::Completed,
+    ///     opponents: Opponents::default(),
+    /// };
+    /// // Set match result for a match with id = "2" of a tournament with id = "1"
+    /// assert!(t.set_match_result(TournamentId("1".to_owned()),
+    ///                            MatchId("2".to_owned()),
+    ///                            result).is_ok());
+    /// ```
     pub fn set_match_result(&self,
                             id: TournamentId,
                             match_id: MatchId,
@@ -482,6 +647,19 @@ impl Toornament {
 
     /// [Returns a collection of games from one match.]
     /// (https://developer.toornament.com/doc/games#get:tournaments:tournament_id:matches:match_id:games)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get match games of a match with id = "2" of a tournament with id = "1"
+    /// let games = t.match_games(TournamentId("1".to_owned()),
+    ///                           MatchId("2".to_owned()),
+    ///                           true).unwrap();
+    /// ```
     pub fn match_games(&self,
                        id: TournamentId,
                        match_id: MatchId,
@@ -500,6 +678,20 @@ impl Toornament {
 
     /// [Returns detailed information about one game.]
     /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a match game with number "3" of a match with id = "2" of a tournament with id = "1"
+    /// let game = t.match_game(TournamentId("1".to_owned()),
+    ///                         MatchId("2".to_owned()),
+    ///                         GameNumber(3i64),
+    ///                         true).unwrap();
+    /// ```
     pub fn match_game(&self,
                       id: TournamentId,
                       match_id: MatchId,
@@ -522,6 +714,25 @@ impl Toornament {
     /// [If you need to make changes on your game data, you are able to do so by patching one
     /// or several fields of your game.]
     /// (https://developer.toornament.com/doc/games?#patch:tournaments:tournament_id:matches:match_id:games:number)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// let game = Game {
+    ///     number: GameNumber(3i64),
+    ///     status: MatchStatus::Completed,
+    ///     opponents: Opponents::default(),
+    /// };
+    /// // Update a match game with number "3" of a match with id = "2" of a tournament with id = "1"
+    /// assert!(t.update_match_game(TournamentId("1".to_owned()),
+    ///                             MatchId("2".to_owned()),
+    ///                             GameNumber(3i64),
+    ///                             game).is_ok());
+    /// ```
     pub fn update_match_game(&self,
                              id: TournamentId,
                              match_id: MatchId,
@@ -543,6 +754,19 @@ impl Toornament {
 
     /// [Returns detailed result about one specific game.]
     /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number:result)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a match game result with number "3" of a match with id = "2" of a tournament with id = "1"
+    /// assert!(t.match_game_result(TournamentId("1".to_owned()),
+    ///                             MatchId("2".to_owned()),
+    ///                             GameNumber(3i64)).is_ok());
+    /// ```
     pub fn match_game_result(&self,
                              id: TournamentId,
                              match_id: MatchId,
@@ -562,6 +786,26 @@ impl Toornament {
 
     /// [Updates or creates detailed result about one game.]
     /// (https://developer.toornament.com/doc/games?#put:tournaments:tournament_id:matches:match_id:games:number:result)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Define a result
+    /// let result = MatchResult {
+    ///     status: MatchStatus::Completed,
+    ///     opponents: Opponents::default(),
+    /// };
+    /// // Update a match game result with number "3" of a match with id = "2" of a tournament with id = "1"
+    /// assert!(t.update_match_game_result(TournamentId("1".to_owned()),
+    ///                                    MatchId("2".to_owned()),
+    ///                                    GameNumber(3i64),
+    ///                                    result,
+    ///                                    true).is_ok());
+    /// ```
     pub fn update_match_game_result(&self,
                                     id: TournamentId,
                                     match_id: MatchId,
@@ -587,6 +831,19 @@ impl Toornament {
     /// to have access to its participants, meaning the tournament organizer has published it. The
     /// participants are returned by 256.]
     /// (https://developer.toornament.com/doc/participant#get:tournaments:tournament_id:participants)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get participants of a tournament with id = "1" with default filter
+    /// let participants = t.tournament_participants(
+    ///     TournamentId("1".to_owned()),
+    ///     TournamentParticipantsFilter::default()).unwrap();
+    /// ```
     pub fn tournament_participants(&self,
                                    id: TournamentId,
                                    filter: TournamentParticipantsFilter) -> Result<Participants> {
@@ -602,6 +859,21 @@ impl Toornament {
 
     /// [Create a participant in a tournament.]
     /// (https://developer.toornament.com/doc/participants?#post:tournaments:tournament_id:participants)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Define a participant
+    /// let participant = Participant::create("Test participant");
+    /// // Create a participant for a tournament with id = "1"
+    /// let participant = t.create_tournament_participant(TournamentId("1".to_owned()),
+    ///                                                   participant).unwrap();
+    /// assert!(participant.id.is_some());
+    /// ```
     pub fn create_tournament_participant(&self,
                                          id: TournamentId,
                                          participant: Participant) -> Result<Participant> {
@@ -617,6 +889,21 @@ impl Toornament {
     /// [Create a list of participants in a tournament. If any participant already exists he will
     /// be erased.]
     /// (https://developer.toornament.com/doc/participants?_locale=en#put:tournaments:tournament_id:participants)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// let mut participants = vec![Participant::create("First participant"),
+    ///                             Participant::create("Second participant")];
+    /// // Update a participant for a tournament with id = "1"
+    /// let new_participants = t.update_tournament_participants(TournamentId("1".to_owned()),
+    ///                                                         Participants(participants)).unwrap();
+    /// assert_eq!(new_participants.0.len(), 2);
+    /// ```
     pub fn update_tournament_participants(&self,
                                           id: TournamentId,
                                           participants: Participants) -> Result<Participants> {
@@ -631,6 +918,19 @@ impl Toornament {
 
     /// [Returns detailed information about one participant.]
     /// (https://developer.toornament.com/doc/participants?_locale=en#get:tournaments:tournament_id:participants:id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a participant with id = "2" of a tournament with id = "1"
+    /// let participant = t.tournament_participant(TournamentId("1".to_owned()),
+    ///                                            ParticipantId("2".to_owned())).unwrap();
+    /// assert_eq!(participant.id, Some(ParticipantId("2".to_owned())));
+    /// ```
     pub fn tournament_participant(&self,
                                   id: TournamentId,
                                   participant_id: ParticipantId) -> Result<Participant> {
@@ -648,6 +948,27 @@ impl Toornament {
 
     /// [Update some of the editable information on a participant.]
     /// (https://developer.toornament.com/doc/participants?_locale=en#patch:tournaments:tournament_id:participants:id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a participant with id = "2" of a tournament with id = "1"
+    /// let mut participant = t.tournament_participant(TournamentId("1".to_owned()),
+    ///                                                ParticipantId("2".to_owned())).unwrap();
+    /// assert_eq!(participant.id, Some(ParticipantId("2".to_owned())));
+    /// // Update the participant's name and send it
+    /// participant.name("Updated participant name here".to_owned());
+    /// let updated_participant = t.update_tournament_participant(
+    ///     TournamentId("1".to_owned()),
+    ///     ParticipantId("2".to_owned()),
+    ///     participant).unwrap();
+    /// assert_eq!(updated_participant.id, Some(ParticipantId("2".to_owned())));
+    /// assert_eq!(updated_participant.name, "Updated participant name here");
+    /// ```
     pub fn update_tournament_participant(&self,
                                          id: TournamentId,
                                          participant_id: ParticipantId,
@@ -667,6 +988,18 @@ impl Toornament {
 
     /// [Deletes one participant.]
     /// (https://developer.toornament.com/doc/participants?_locale=en#delete:tournaments:tournament_id:participants:id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Delete a participant with id = "2" of a tournament with id = "1"
+    /// assert!(t.delete_tournament_participant(TournamentId("1".to_owned()),
+    ///                                         ParticipantId("2".to_owned())).is_ok());
+    /// ```
     pub fn delete_tournament_participant(&self,
                                          id: TournamentId,
                                          participant_id: ParticipantId) -> Result<()> {
@@ -687,6 +1020,17 @@ impl Toornament {
 
     /// [Returns a collection of permission from one tournament.]
     /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get permissions of a tournament with id = "1"
+    /// let permissions = t.tournament_permissions(TournamentId("1".to_owned())).unwrap();
+    /// ```
     pub fn tournament_permissions(&self, id: TournamentId) -> Result<Permissions> {
         debug!("Getting tournament permissions by tournament id: {:?}", id);
         let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
@@ -697,6 +1041,28 @@ impl Toornament {
 
     /// [Create a permission for a user on a tournament.]
     /// (https://developer.toornament.com/doc/permissions?_locale=en#post:tournaments:tournament_id:permissions)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// use std::collections::BTreeSet;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Define our permission
+    /// let mut attributes = BTreeSet::new();
+    /// attributes.insert(PermissionAttribute::Register);
+    /// attributes.insert(PermissionAttribute::Edit);
+    ///
+    /// let permission = Permission::create("test@mail.ru", PermissionAttributes(attributes));
+    /// // Add permission to a tournament with id = "1"
+    /// let new_permission = t.create_tournament_permission(TournamentId("1".to_owned()),
+    ///                                                     permission).unwrap();
+    /// assert!(new_permission.id.is_some());
+    /// assert_eq!(new_permission.email, "test@mail.ru");
+    /// assert_eq!(new_permission.attributes.0.len(), 2);
+    /// ```
     pub fn create_tournament_permission(&self,
                                         id: TournamentId,
                                         permission: Permission) -> Result<Permission> {
@@ -710,6 +1076,20 @@ impl Toornament {
 
     /// [Retrieves a permission of a tournament.]
     /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions:permission_id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// use std::collections::BTreeSet;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get a permission with id = "2" of a tournament with id = "1"
+    /// let permission = t.tournament_permission(TournamentId("1".to_owned()),
+    ///                                          PermissionId("2".to_owned())).unwrap();
+    /// assert_eq!(permission.id, Some(PermissionId("2".to_owned())));
+    /// ```
     pub fn tournament_permission(&self,
                                  id: TournamentId,
                                  permission_id: PermissionId) -> Result<Permission> {
@@ -727,6 +1107,30 @@ impl Toornament {
 
     /// [Update rights of a permission.]
     /// (https://developer.toornament.com/doc/permissions?_locale=en#patch:tournaments:tournament_id:permissions:permission_id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// use std::collections::BTreeSet;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Define our permission attributes
+    /// let mut attributes = BTreeSet::new();
+    /// attributes.insert(PermissionAttribute::Register);
+    /// attributes.insert(PermissionAttribute::Edit);
+    /// 
+    /// // Update attributes of a permission with id = "2" of a tournament with id = "1"
+    /// let permission = t.update_tournament_permission_attributes(
+    ///     TournamentId("1".to_owned()),
+    ///     PermissionId("2".to_owned()),
+    ///     PermissionAttributes(attributes)).unwrap();
+    /// assert_eq!(permission.id, Some(PermissionId("2".to_owned())));
+    /// assert_eq!(permission.attributes.0.len(), 2);
+    /// assert!(permission.attributes.0.iter().find(|p| *p == &PermissionAttribute::Edit).is_some());
+    /// assert!(permission.attributes.0.iter().find(|p| *p == &PermissionAttribute::Register).is_some());
+    /// ```
     pub fn update_tournament_permission_attributes(&self,
                                                    id: TournamentId,
                                                    permission_id: PermissionId,
@@ -753,6 +1157,20 @@ impl Toornament {
 
     /// [Delete a user permission of a tournament.]
     /// (https://developer.toornament.com/doc/permissions?_locale=en#delete:tournaments:tournament_id:permissions:permission_id)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// use std::collections::BTreeSet;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Delete a permission with id = "2" of a tournament with id = "1"
+    /// assert!(t.delete_tournament_permission(
+    ///     TournamentId("1".to_owned()),
+    ///     PermissionId("2".to_owned())).is_ok());
+    /// ```
     pub fn delete_tournament_permission(&self,
                                         id: TournamentId,
                                         permission_id: PermissionId) -> Result<()> {
@@ -774,6 +1192,18 @@ impl Toornament {
     /// [Returns a collection of stages from one tournament. The tournament must be public to have
     /// access to its stages, meaning the tournament organizer must publish it.]
     /// (https://developer.toornament.com/doc/stages?_locale=en#get:tournaments:tournament_id:stages)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// use std::collections::BTreeSet;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get stages of a tournament with id = "1"
+    /// let stages = t.tournament_stages(TournamentId("1".to_owned())).unwrap();
+    /// ```
     pub fn tournament_stages(&self, id: TournamentId) -> Result<Stages> {
         debug!("Getting tournament stages by tournament id: {:?}", id);
         let address = get_ep_address(Endpoint::Stages)?.replace(":tournament_id:", &id.0);
@@ -786,6 +1216,19 @@ impl Toornament {
     /// sorted by optional query parameters. The tournament must be public to have access to its
     /// videos, meaning the tournament organizer has published it. The videos are returned by 20.]
     /// (https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos)
+    ///
+    /// # Example
+    /// 
+    /// ```rust,no_run
+    /// use toornament::*;
+    /// use std::collections::BTreeSet;
+    /// let t = Toornament::with_application("API_TOKEN",
+    ///                                      "CLIENT_ID",
+    ///                                      "CLIENT_SECRET").unwrap();
+    /// // Get videos of a tournament with id = "1" with default filter
+    /// let videos = t.tournament_videos(TournamentId("1".to_owned()),
+    ///                                  TournamentVideosFilter::default()).unwrap();
+    /// ```
     pub fn tournament_videos(&self,
                              id: TournamentId,
                              filter: TournamentVideosFilter) -> Result<Videos> {
