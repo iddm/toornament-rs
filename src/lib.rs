@@ -80,6 +80,30 @@ pub use tournaments::{
 };
 
 
+/// Macro only for internal use with the `Toornament` object (relies on it's fields)
+macro_rules! request {
+    ($toornament:ident, $method:ident, $address:expr) => {
+        retry(|| $toornament.client.$method($address)
+                                   .header(XApiKey($toornament.keys.0.clone()))
+                                   .header(Authorization(Bearer {
+                                       token: $toornament.oauth_token.clone()
+                                   })))
+    }
+}
+
+/// Macro only for internal use with the `Toornament` object (relies on it's fields)
+macro_rules! request_body {
+    ($toornament:ident, $method:ident, $address:expr, $body:expr) => {
+        retry(|| $toornament.client.$method($address)
+                                   .body($body)
+                                   .header(XApiKey($toornament.keys.0.clone()))
+                                   .header(Authorization(Bearer {
+                                       token: $toornament.oauth_token.clone()
+                                   })))
+    };
+}
+
+
 const API_BASE: &'static str = "https://api.toornament.com";
 
 mod custom_headers {
@@ -275,8 +299,7 @@ impl Toornament {
             debug!("Getting all disciplines");
             address = get_ep_address(Endpoint::Disciplines)?;
         }
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
         if id_is_set {
             Ok(Disciplines(vec![serde_json::from_reader::<_, Discipline>(response)?]))
         } else {
@@ -306,9 +329,7 @@ impl Toornament {
                               get_ep_address(Endpoint::PublicTournaments)?,
                               if with_streams { "1" } else { "0" });
         }
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, get, &address)?;
         if id_is_set {
             Ok(Tournaments(vec![serde_json::from_reader::<_, Tournament>(response)?]))
         } else {
@@ -335,17 +356,11 @@ impl Toornament {
         let response;
         if id_is_set {
             debug!("Editing tournament: {:#?}", tournament);
-            response = retry(|| self.client.patch(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+            response = request_body!(self, patch, &address, body.as_str())?;
 
         } else {
             debug!("Creating tournament: {:#?}", tournament);
-            response = retry(|| self.client.post(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+            response = request_body!(self, post, &address, body.as_str())?;
         }
         Ok(serde_json::from_reader(response)?)
     }
@@ -358,9 +373,7 @@ impl Toornament {
         let address = format!("{}/{}",
                               get_ep_address(Endpoint::PublicTournaments)?,
                               id.0);
-        let _ = retry(|| self.client.delete(&address)
-                                    .header(XApiKey(self.keys.0.clone()))
-                                    .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let _ = request!(self, delete, &address)?;
         Ok(())
     }
 
@@ -371,9 +384,7 @@ impl Toornament {
     pub fn my_tournaments(&self) -> Result<Tournaments> {
         debug!("Getting all tournaments");
         let address = get_ep_address(Endpoint::MyTournaments)?;
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, get, &address)?;
         Ok(serde_json::from_reader(response)?)
     }
 
@@ -391,9 +402,7 @@ impl Toornament {
                                  match_id.0,
                                  if with_games { "1" } else { "0" });
                 let address = ep.replace(":tournament_id:", &id.0);
-                retry(|| self.client.get(&address)
-                                    .header(XApiKey(self.keys.0.clone()))
-                                    .header(Authorization(Bearer { token: self.oauth_token.clone() })))?
+                request!(self, get, &address)?
             },
             None => {
                 debug!("Getting matches by tournament id: {:?}", id);
@@ -401,9 +410,7 @@ impl Toornament {
                                  get_ep_address(Endpoint::Matches)?,
                                  if with_games { "1" } else { "0" });
                 let address = ep.replace(":tournament_id:", &id.0);
-                retry(|| self.client.get(&address)
-                                    .header(XApiKey(self.keys.0.clone()))
-                                    .header(Authorization(Bearer { token: self.oauth_token.clone() })))?
+                request!(self, get, &address)?
             },
         };
 
@@ -421,8 +428,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Matches)?,
                          filters_to_string::match_filter(filter));
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -439,10 +445,7 @@ impl Toornament {
         let ep = format!("{}/{}", get_ep_address(Endpoint::Matches)?, match_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&updated_match)?;
-        let response = retry(|| self.client.patch(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, patch, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -455,8 +458,7 @@ impl Toornament {
                match_id);
         let ep = format!("{}/{}/result", get_ep_address(Endpoint::Matches)?, match_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -473,10 +475,7 @@ impl Toornament {
         let ep = format!("{}/{}/result", get_ep_address(Endpoint::Matches)?, match_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&result)?;
-        let response = retry(|| self.client.put(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, put, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -495,9 +494,7 @@ impl Toornament {
                          match_id.0,
                          if with_stats { 1 } else { 0 });
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
-
+        let response = request!(self, get, &address)?;
         Ok(serde_json::from_reader(response)?)
     }
 
@@ -517,8 +514,7 @@ impl Toornament {
                          game_number.0,
                          if with_stats { 1 } else { 0 });
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -540,10 +536,7 @@ impl Toornament {
                          game_number.0);
         let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&game)?;
-        let response = retry(|| self.client.patch(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, patch, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -562,8 +555,7 @@ impl Toornament {
                          match_id.0,
                          game_number.0);
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -586,10 +578,7 @@ impl Toornament {
                          if update_match { 1 } else { 0 });
         let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&result)?;
-        let response = retry(|| self.client.put(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, put, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -606,9 +595,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Participants)?,
                          filters_to_string::tournament_participants(filter));
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -622,10 +609,7 @@ impl Toornament {
         let address = get_ep_address(Endpoint::Participants)?
                       .replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&participant)?;
-        let response = retry(|| self.client.post(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, post, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -640,10 +624,7 @@ impl Toornament {
         let address = get_ep_address(Endpoint::Participants)?
                       .replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&participants)?;
-        let response = retry(|| self.client.put(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, put, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -660,9 +641,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Participants)?,
                          participant_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -681,10 +660,7 @@ impl Toornament {
                          participant_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&participant)?;
-        let response = retry(|| self.client.patch(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, patch, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -701,9 +677,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Participants)?,
                          participant_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.delete(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, delete, &address)?;
         if response.status().is_success() {
             Ok(())
         } else {
@@ -716,9 +690,7 @@ impl Toornament {
     pub fn tournament_permissions(&self, id: TournamentId) -> Result<Permissions> {
         debug!("Getting tournament permissions by tournament id: {:?}", id);
         let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -731,10 +703,7 @@ impl Toornament {
         debug!("Creating tournament permissions by tournament id: {:?}", id);
         let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
         let body = serde_json::to_string(&permission)?;
-        let response = retry(|| self.client.get(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, get, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -751,9 +720,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Permissions)?,
                          permission_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -779,10 +746,7 @@ impl Toornament {
         let address = ep.replace(":tournament_id:", &id.0);
         let wrapped_attributes = WrappedAttributes { attributes: attributes };
         let body = serde_json::to_string(&wrapped_attributes)?;
-        let response = retry(|| self.client.patch(&address)
-                                           .body(body.as_str())
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request_body!(self, patch, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -799,9 +763,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Permissions)?,
                          permission_id.0);
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.delete(&address)
-                                           .header(XApiKey(self.keys.0.clone()))
-                                           .header(Authorization(Bearer { token: self.oauth_token.clone() })))?;
+        let response = request!(self, delete, &address)?;
         if response.status().is_success() {
             Ok(())
         } else {
@@ -815,8 +777,7 @@ impl Toornament {
     pub fn tournament_stages(&self, id: TournamentId) -> Result<Stages> {
         debug!("Getting tournament stages by tournament id: {:?}", id);
         let address = get_ep_address(Endpoint::Stages)?.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -833,8 +794,7 @@ impl Toornament {
                          get_ep_address(Endpoint::Videos)?,
                          filters_to_string::tournament_videos(filter));
         let address = ep.replace(":tournament_id:", &id.0);
-        let response = retry(|| self.client.get(&address)
-                                           .header(XApiKey(self.keys.0.clone())))?;
+        let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
     }
