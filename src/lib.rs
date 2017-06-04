@@ -7,6 +7,17 @@
 //! (https://developer.toornament.com/overview/get-started).
 //!
 //! For examples, see the `examples` directory in the source tree.
+//!
+//! # Usage
+//!
+//! Start by creating and instance `Toornament` structure and then perform requests:
+//!
+//! ```rust,no_run
+//! let toornament = Toornament::with_application("API_TOKEN",
+//!                                               "CLIENT_ID",
+//!                                               "CLIENT_SECRET").unwrap();
+//! println!("Disciplines: {:?}\n", toornament.disciplines(None));
+//! ```
 #![warn(missing_docs)]
 #[macro_use]
 extern crate log;
@@ -271,9 +282,9 @@ impl Toornament {
     /// (https://developer.toornament.com/applications/) (You must be logged in to open the page).
     /// This method connects to the toornament service and if there is a error it returns the `Error`
     /// object and on success it returns `Toornament` object.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -314,9 +325,9 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/disciplines#get:disciplines) if id is None or
     /// [a disciplines with the detail of his features]
     /// (https://developer.toornament.com/doc/disciplines#get:disciplines:id)
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -355,9 +366,9 @@ impl Toornament {
     /// visible.](https://developer.toornament.com/doc/tournaments#get:tournaments) if id is None or
     /// [a detailed information about one tournament. The tournament must be public.]
     /// (https://developer.toornament.com/doc/tournaments#get:tournaments:id)
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -400,9 +411,9 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/tournaments#patch:tournaments:id) if `tournament.id`
     /// is set otherwise [creates a tournament]
     /// (https://developer.toornament.com/doc/tournaments#post:tournaments).
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -445,9 +456,9 @@ impl Toornament {
 
     /// [Deletes a tournament, its participants and all its matches]
     /// (https://developer.toornament.com/doc/tournaments#delete:tournaments:id).
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -470,9 +481,9 @@ impl Toornament {
     /// The result is filtered, sorted and paginated by the given query parameters. A maximum of
     /// 50 tournaments is returned (per page).]
     /// (https://developer.toornament.com/doc/tournaments#get:metournaments)
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -494,7 +505,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -536,7 +547,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -561,7 +572,7 @@ impl Toornament {
     /// several fields of your match.](https://developer.toornament.com/doc/matches#patch:tournaments:tournament_id:matches:id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -597,7 +608,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches:id:result)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -622,7 +633,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/matches#put:tournaments:tournament_id:matches:id:result)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -657,7 +668,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/games#get:tournaments:tournament_id:matches:match_id:games)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -688,7 +699,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -724,7 +735,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/games?#patch:tournaments:tournament_id:matches:match_id:games:number)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -764,7 +775,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number:result)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -796,7 +807,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/games?#put:tournaments:tournament_id:matches:match_id:games:number:result)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -841,7 +852,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/participant#get:tournaments:tournament_id:participants)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -869,7 +880,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/participants?#post:tournaments:tournament_id:participants)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -899,7 +910,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/participants?_locale=en#put:tournaments:tournament_id:participants)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -928,7 +939,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/participants?_locale=en#get:tournaments:tournament_id:participants:id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -958,7 +969,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/participants?_locale=en#patch:tournaments:tournament_id:participants:id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -998,7 +1009,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/participants?_locale=en#delete:tournaments:tournament_id:participants:id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -1030,7 +1041,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// let t = Toornament::with_application("API_TOKEN",
@@ -1051,7 +1062,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/permissions?_locale=en#post:tournaments:tournament_id:permissions)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// use std::collections::BTreeSet;
@@ -1086,7 +1097,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions:permission_id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// use std::collections::BTreeSet;
@@ -1117,7 +1128,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/permissions?_locale=en#patch:tournaments:tournament_id:permissions:permission_id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// use std::collections::BTreeSet;
@@ -1128,7 +1139,7 @@ impl Toornament {
     /// let mut attributes = BTreeSet::new();
     /// attributes.insert(PermissionAttribute::Register);
     /// attributes.insert(PermissionAttribute::Edit);
-    /// 
+    ///
     /// // Update attributes of a permission with id = "2" of a tournament with id = "1"
     /// let permission = t.update_tournament_permission_attributes(
     ///     TournamentId("1".to_owned()),
@@ -1167,7 +1178,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/permissions?_locale=en#delete:tournaments:tournament_id:permissions:permission_id)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// use std::collections::BTreeSet;
@@ -1202,7 +1213,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/stages?_locale=en#get:tournaments:tournament_id:stages)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// use std::collections::BTreeSet;
@@ -1226,7 +1237,7 @@ impl Toornament {
     /// (https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos)
     ///
     /// # Example
-    /// 
+    ///
     /// ```rust,no_run
     /// use toornament::*;
     /// use std::collections::BTreeSet;

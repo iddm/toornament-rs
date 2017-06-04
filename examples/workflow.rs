@@ -4,7 +4,7 @@ use toornament::*;
 
 fn main() {
     let toornament = Toornament::with_application("API_TOKEN", "CLIENT_ID", "CLIENT_SECRET").unwrap().timeout(5);
-    
+
     // let id = TournamentId("435959567336932466".to_owned());
     // let t = toornament.tournaments(Some(id.clone()), false).unwrap();
     // println!("Tournament: {:?}", t);
