@@ -14,10 +14,15 @@ Everything is implemented.
 
 ## Usage
 Start by creating `Toornament` instance and perform needed operations after.
+
 ```rust
 let t = Toornament::with_application("API_TOKEN", "CLIENT_ID", "CLIENT_SECRET").unwrap();
 assert!(t.disciplines(None).is_ok());
 ```
+
+More examples are in the 
+[documentation](https://vityafx.github.io/toornament-rs/master/toornament/) and in the 
+[`examples/` subdirectory](https://github.com/vityafx/toornament-rs/blob/master/examples/)
 
 ## License
 
