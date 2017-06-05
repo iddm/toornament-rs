@@ -195,11 +195,15 @@ fn retry<F: Fn() -> reqwest::RequestBuilder>(f: F)
 }
 
 fn parse_token<R: Read>(json_str: R) -> Result<String> {
-    #[derive(Deserialize)]
+    #[derive(Debug, Deserialize)]
     struct AccessToken {
         access_token: String,
+        expires_in: u64,
+        token_type: String,
+        scope: Option<String>,
     }
     let json: AccessToken = serde_json::from_reader(json_str)?;
+    debug!("Toornament access token information: {:?}", json);
     Ok(json.access_token)
 }
 
