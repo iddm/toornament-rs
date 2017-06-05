@@ -55,6 +55,7 @@ pub struct ToornamentErrors(pub Vec<ToornamentError>);
 /// Toornament service error
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct ToornamentServiceError {
+    /// A list of toornament service errors
     pub errors: ToornamentErrors,
 }
 

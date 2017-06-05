@@ -13,6 +13,8 @@
 //! Start by creating and instance `Toornament` structure and then perform requests:
 //!
 //! ```rust,no_run
+//! use toornament::*;
+//!
 //! let toornament = Toornament::with_application("API_TOKEN",
 //!                                               "CLIENT_ID",
 //!                                               "CLIENT_SECRET").unwrap();
@@ -52,7 +54,15 @@ mod opponents;
 mod streams;
 mod common;
 
-pub use error::{ Result, Error };
+pub use error::{
+    Result,
+    Error,
+    ToornamentServiceError,
+    ToornamentErrorType,
+    ToornamentErrorScope,
+    ToornamentError,
+    ToornamentErrors,
+};
 pub use common::{ TeamSize, MatchResultSimple, Date };
 pub use matches::{
     Match,
