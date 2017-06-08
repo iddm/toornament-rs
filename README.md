@@ -6,7 +6,8 @@
 http://toornament.com api bindings.
 
 ## Status
-Everything is implemented.
+Everything is implemented. Note, that the `toornament` service API is at early stages of development
+and in beta stage, the library will try to be up-to-date.
 
 ## Implementation
 - No unsafe blocks (but in the tests:))
