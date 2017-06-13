@@ -1,5 +1,5 @@
 # toornament-rs
-[![](https://meritbadge.herokuapp.com/toornament)](https://crates.io/crates/toornament) [![](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs) [![](https://img.shields.io/badge/docs-online-2020ff.svg)](https://vityafx.github.io/toornament-rs/master/toornament/)
+[![](https://meritbadge.herokuapp.com/toornament)](https://crates.io/crates/toornament) [![](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs) [![](https://img.shields.io/badge/docs-online-2020ff.svg)](https://docs.rs/toornament)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 
@@ -8,6 +8,9 @@ http://toornament.com api bindings.
 ## Status
 Everything is implemented. Note, that the `toornament` service API is at early stages of development
 and in beta stage, the library will try to be up-to-date.
+
+## The book and the documentation
+There is a [book](https://vityafx.github.io/toornament-rs) and the [documentation](https://docs.rs/toornament) which may help you using this library
 
 ## Implementation
 - No unsafe blocks (but in the tests:))
