@@ -607,7 +607,7 @@ impl Toornament {
                         id: TournamentId,
                         match_id: MatchId,
                         updated_match: Match) -> Result<Match> {
-        debug!("Updating a match result by tournament id and match id: {:?} / {:?}",
+        debug!("Updating a match by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
         let ep = format!("{}/{}", get_ep_address(Endpoint::Matches)?, match_id.0);
