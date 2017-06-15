@@ -26,6 +26,7 @@ before_deploy:
   - cargo install mdbook
   - cd book
   - mdbook build
+  - cd ..
 
 deploy:
   provider: pages
