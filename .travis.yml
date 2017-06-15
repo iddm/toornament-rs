@@ -21,6 +21,12 @@ addons:
   apt:
     packages:
       - libssl-dev
+      
+before_deploy:
+  - cargo install mdbook
+  - cd book
+  - mdbook build
+
 deploy:
   provider: pages
   skip_cleanup: true
