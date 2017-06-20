@@ -16,8 +16,8 @@ cache:
 
 script:
   - cargo test --verbose $FEATURES -- --nocapture
-  - cd external_markdown_tests
-  - cargo test --verbose $FEATURES -- --nocapture
+  # - cd external_markdown_tests
+  # - cargo test --verbose $FEATURES -- --nocapture
 
 addons:
   apt:
