@@ -1,6 +1,6 @@
 # toornament-rs
 [![](https://img.shields.io/crates/v/toornament.svg)](https://crates.io/crates/toornament) [![](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs)
-[![Docs](https://docs.rs/mio/badge.svg)](https://docs.rs/toornament)
+[![Docs](https://docs.rs/toornament/badge.svg)](https://docs.rs/toornament)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 
