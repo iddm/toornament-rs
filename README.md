@@ -10,18 +10,26 @@ Everything is implemented. Note, that the `toornament` service API is at early s
 and in beta stage, the library will try to be up-to-date.
 
 ## The book and the documentation
-There is a [book](https://vityafx.github.io/toornament-rs) and the [documentation](https://docs.rs/toornament) which may help you using this library
+There is a [book](https://vityafx.github.io/toornament-rs) and the
+[documentation](https://docs.rs/toornament) which may help you using this library.
 
 ## Implementation
+- Non-mutable interface (no need to synchronize, thread-safe).
 - No unsafe blocks (but in the tests:))
 - `reqwest` crate is used for performing requests
 
 ## Usage
 Start by creating `Toornament` instance and perform needed operations after.
 
-```rust
-let t = Toornament::with_application("API_TOKEN", "CLIENT_ID", "CLIENT_SECRET").unwrap();
-assert!(t.disciplines(None).is_ok());
+```rust,no_run
+extern crate toornament;
+use toornament::*;
+
+fn main() {
+    let t = Toornament::with_application("API_TOKEN", "CLIENT_ID", "CLIENT_SECRET")
+                       .unwrap();
+    assert!(t.disciplines(None).is_ok());
+}
 ```
 
 More examples are in the 

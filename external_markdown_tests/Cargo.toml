@@ -1,0 +1,12 @@
+[package]
+name = "external_markdown_tests"
+version = "0.1.0"
+authors = ["Victor Polevoy <maintainer@thefx.co>"]
+build = "build.rs"
+
+[build-dependencies]
+skeptic = "0.9"
+
+[dev-dependencies]
+skeptic = "0.9"
+toornament = { path = "../" }

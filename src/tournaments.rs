@@ -226,6 +226,27 @@ impl Tournament {
     builder!(match_format, Option<MatchFormat>);
 }
 
+impl Tournament {
+    /// Returns iter for the tournament
+    pub fn iter<'a>(&self, client: &'a ::Toornament) -> Option<::TournamentIter<'a>> {
+        match self.id.clone() {
+            Some(id) => Some(::TournamentIter::new(client, id)
+                                              .with_streams(self.streams.is_some())),
+            None => None,
+        }
+    }
+
+    /// Converts tournament into an iter
+    pub fn into_iter<'a>(self, client: &'a ::Toornament)
+        -> Option<::TournamentIter<'a>> {
+        match self.id {
+            Some(id) => Some(::TournamentIter::new(client, id)
+                                              .with_streams(self.streams.is_some())),
+            None => None,
+        }
+    }
+}
+
 /// A list of `Tournament` objects.
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Tournaments(pub Vec<Tournament>);

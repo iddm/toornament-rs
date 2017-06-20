@@ -68,6 +68,18 @@ impl Discipline {
     builder!(additional_fields, Option<AdditionalFields>);
 }
 
+impl Discipline {
+    /// Returns iter for the discipline
+    pub fn iter<'a>(&self, client: &'a ::Toornament) -> ::DisciplineIter<'a> {
+        ::DisciplineIter::new(client, self.id.clone())
+    }
+
+    /// Converts discipline into an iter
+    pub fn into_iter<'a>(self, client: &'a ::Toornament) -> ::DisciplineIter<'a> {
+        ::DisciplineIter::new(client, self.id)
+    }
+}
+
 /// A list of `Discipline` objects.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Disciplines(pub Vec<Discipline>);

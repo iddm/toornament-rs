@@ -31,15 +31,15 @@ fn workflow() -> Result<()> {
     println!("Created tournament: {:?}\n", tournament);
 
     let wwe2k17_tournaments = toornament.tournaments(Some(tournament.id.clone().unwrap()),
-                                                    false)?;
+                                                     false)?;
     let wwe2k17_t = wwe2k17_tournaments.0.first().clone().unwrap();
     assert_eq!(wwe2k17_t.id, tournament.id);
 
     // Setting the website and making the tournament public so we can fetch matches.
     // For making the tournament public we must also set start date
-    tournament.website(tournament_website.clone())
-              .date_start(Some(UTC::today().naive_utc()))
-              .public(true);
+    tournament = tournament.website(tournament_website.clone())
+                           .date_start(Some(UTC::today().naive_utc()))
+                           .public(true);
     assert_eq!(tournament.website, tournament_website);
     assert_eq!(tournament.public, true);
 
@@ -82,8 +82,39 @@ fn workflow() -> Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "fancy")]
+fn fancy_workflow() -> Result<()> {
+    let toornament = Toornament::with_application("API_TOKEN",
+                                                  "CLIENT_ID",
+                                                  "CLIENT_SECRET")?
+                                .timeout(5);
+
+    let tournament_id = TournamentId("1".to_owned());
+
+    let tournament = Tournament::with_id(tournament_id.clone(), false)?;
+    assert_eq!(tournament,
+               toornament.tournaments(Some(tournament_id.clone()), false)?.0.first().unwrap().clone());
+
+    assert_eq!(tournament.stages()?.0.len(), toornament.tournament_stages(tournament_id.clone())?.0.len());
+
+    assert_eq!(tournament.videos(TournamentVideosFilter::default())?.0.len(),
+               toornament.tournament_videos(tournament_id.clone(), TournamentVideosFilter::default())?.0.len());
+
+    assert_eq!(Tournaments::all(false)?.0.len(), toornament.tournaments(None, false)?.0.len());
+
+    assert_eq!(Tournaments::my()?.0.len(), toornament.my_tournaments()?.0.len());
+
+    Ok(())
+}
+
 fn main() {
     if let Err(e) = workflow() {
         println!("Error occured during the work flow: {:?}", e);
+    }
+
+    #[cfg(feature = "fancy")]
+    match fancy_workflow() {
+        Ok(_) => {},
+        Err(e) => println!("Error occured during the fancy work flow: {:?}", e),
     }
 }

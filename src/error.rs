@@ -59,6 +59,48 @@ pub struct ToornamentServiceError {
     pub errors: ToornamentErrors,
 }
 
+
+/// Iter errors
+#[derive(Debug, Clone)]
+pub enum IterError {
+    /// A tournament with such id does not exist
+    NoSuchTournament(::TournamentId),
+    /// A tournament does not have an id set
+    NoTournamentId(::Tournament),
+    /// A match does not exist
+    NoSuchMatch(::TournamentId, ::MatchId),
+    /// A permission does not have an id set
+    NoPermissionId,
+    /// A discipline with such id does not exist
+    NoSuchDiscipline(::DisciplineId),
+}
+
+impl Display for IterError {
+    fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        let s;
+        match *self {
+            IterError::NoSuchTournament(ref id) => {
+                s = format!("A tournament with id ({}) does not exist", id.0);
+            },
+            IterError::NoTournamentId(_) => {
+                s = format!("A tournament does not have an id set.");
+            },
+            IterError::NoSuchMatch(ref t_id, ref m_id) => {
+                s = format!("A match does not exist (tournament id = {}, match id = {})",
+                            t_id.0,
+                            m_id.0);
+            },
+            IterError::NoPermissionId => {
+                s = format!("A permission does not have an id set.");
+            },
+            IterError::NoSuchDiscipline(ref id) => {
+                s = format!("A permission with id ({}) does not exist.", id.0);
+            },
+        };
+        fmt.write_str(&s)
+    }
+}
+
 /// Toornament API error type.
 #[derive(Debug)]
 pub enum Error {
@@ -76,12 +118,10 @@ pub enum Error {
     Status(::reqwest::StatusCode, String),
     /// A rate limit error, with how many milliseconds to wait before retrying
     RateLimited(u64),
-    /// A Toornament protocol error, with a description
-    Protocol(&'static str),
-    /// A command execution failure, with a command name and output
-    Command(&'static str, ::std::process::Output),
-    /// A miscellaneous error, with a description
-    Other(&'static str),
+    /// An iter error
+    Iter(IterError),
+    /// A rest-api error
+    Rest(&'static str),
 }
 
 impl Error {
@@ -141,7 +181,6 @@ impl Display for Error {
             Error::Json(ref inner) => inner.fmt(f),
             Error::Io(ref inner) => inner.fmt(f),
             Error::Date(ref inner) => inner.fmt(f),
-            Error::Command(cmd, _) => write!(f, "Command failed: {}", cmd),
             _ => f.write_str(self.description()),
         }
     }
@@ -154,12 +193,11 @@ impl StdError for Error {
             Error::Json(ref inner) => inner.description(),
             Error::Io(ref inner) => inner.description(),
             Error::Date(ref inner) => inner.description(),
-            Error::Protocol(msg) |
-            Error::Other(msg) => msg,
+            Error::Iter(_) => "An iter error",
+            Error::Rest(msg) => msg,
             Error::Toornament(status, _) |
             Error::Status(status, _) => status.canonical_reason().unwrap_or("Unknown bad HTTP status"),
             Error::RateLimited(_) => "Rate limited",
-            Error::Command(_, _) => "Command failed",
         }
     }
 

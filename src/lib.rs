@@ -1,16 +1,19 @@
 //! Client library for the [Toornament](https://www.toornament.com) web API.
 //!
 //! Log in to Toornament with `Toornament::with_application`.
-//! Call API methods to interact with the service.
+//! Call API methods to interact with the service directly or user an iterator-like interface to
+//! work with it in more rust-idiomatic way.
 //!
 //! For Toornament API documentation [look here]
 //! (https://developer.toornament.com/overview/get-started).
 //!
 //! For examples, see the `examples` directory in the source tree.
+//! 
+//! For more readings, look at the [`toornament-rs book`](https://vityafx.github.io/toornament-rs).
 //!
 //! # Usage
 //!
-//! Start by creating and instance `Toornament` structure and then perform requests:
+//! Start by creating and instance `Toornament` structure and then perform the requests:
 //!
 //! ```rust,no_run
 //! use toornament::*;
@@ -18,13 +21,20 @@
 //! let toornament = Toornament::with_application("API_TOKEN",
 //!                                               "CLIENT_ID",
 //!                                               "CLIENT_SECRET").unwrap();
-//! println!("Disciplines: {:?}\n", toornament.disciplines(None));
+//! println!("Disciplines: {:?}", toornament.disciplines(None));
+//! println!("Disciplines: {:?}", toornament.disciplines_iter()
+//!                                         .all()
+//!                                         .collect::<Disciplines>());
 //! ```
+//! 
+//! # Additional notes
+//! The `Toornament` structure is `Send` and `Sync`, so it can be simply shared among
+//! threads. Also, the `Toornament` objects may live as long as you need to: the object will
+//! refresh it's access token once it is expired, so you may just create it once and use
+//! everywhere.
 #![warn(missing_docs)]
 #[macro_use]
 extern crate log;
-#[macro_use]
-extern crate lazy_static;
 #[macro_use]
 extern crate hyper;
 extern crate reqwest;
@@ -35,7 +45,7 @@ extern crate serde;
 extern crate chrono;
 
 use reqwest::header::{ Bearer, Authorization, ContentType };
-use std::collections::HashMap;
+use std::sync::Mutex;
 use std::io::Read;
 
 #[macro_use]
@@ -52,11 +62,16 @@ mod stages;
 mod videos;
 mod opponents;
 mod streams;
+mod endpoints;
 mod common;
+pub mod info;
+pub mod iter;
 
+use endpoints::Endpoint;
 pub use error::{
     Result,
     Error,
+    IterError,
     ToornamentServiceError,
     ToornamentErrorType,
     ToornamentErrorScope,
@@ -108,33 +123,41 @@ pub use tournaments::{
     Tournaments,
     TournamentStatus,
 };
-pub use streams:: { StreamId, Stream, Streams };
+pub use streams::{ StreamId, Stream, Streams };
+pub use iter::*;
 
 /// Macro only for internal use with the `Toornament` object (relies on it's fields)
 macro_rules! request {
     ($toornament:ident, $method:ident, $address:expr) => {
-        retry(|| $toornament.client.$method($address)
-                                   .header(XApiKey($toornament.keys.0.clone()))
-                                   .header(Authorization(Bearer {
-                                       token: $toornament.oauth_token.clone()
-                                   })))
+        {
+            let token = $toornament.fresh_token()?;
+
+            retry(|| $toornament.client.$method($address)
+                                       .header(XApiKey($toornament.keys.0.clone()))
+                                       .header(Authorization(Bearer {
+                                           token: token.clone(),
+                                       })))
+        }
     }
 }
 
 /// Macro only for internal use with the `Toornament` object (relies on it's fields)
 macro_rules! request_body {
     ($toornament:ident, $method:ident, $address:expr, $body:expr) => {
-        retry(|| $toornament.client.$method($address)
-                                   .body($body)
-                                   .header(XApiKey($toornament.keys.0.clone()))
-                                   .header(Authorization(Bearer {
-                                       token: $toornament.oauth_token.clone()
-                                   })))
+        {
+            let token = $toornament.fresh_token()?;
+
+            retry(|| $toornament.client.$method($address)
+                                       .body($body)
+                                       .header(XApiKey($toornament.keys.0.clone()))
+                                       .header(Authorization(Bearer {
+                                           token: token.clone(),
+                                       })))
+        }
     };
 }
 
 
-const API_BASE: &'static str = "https://api.toornament.com";
 
 mod custom_headers {
     header! {
@@ -145,35 +168,13 @@ mod custom_headers {
 }
 use custom_headers::*;
 
-#[derive(Debug, Clone, Copy, Ord, Eq, PartialOrd, PartialEq, Hash)]
-enum Endpoint {
-    OauthToken,
-    Disciplines,
-    PublicTournaments,
-    MyTournaments,
-    Matches,
-    Participants,
-    Permissions,
-    Stages,
-    Videos,
+
+#[derive(Debug, Clone)]
+struct AccessToken {
+    access_token: String,
+    expires: u64,
 }
 
-lazy_static! {
-    static ref API_EP: HashMap<Endpoint, &'static str> = {
-        let mut m: HashMap<Endpoint, &'static str> = HashMap::new();
-        m.insert(Endpoint::OauthToken, "/oauth/v2/token");
-        m.insert(Endpoint::Disciplines, "/v1/disciplines");
-        m.insert(Endpoint::PublicTournaments, "/v1/tournaments");
-        m.insert(Endpoint::MyTournaments, "/v1/me/tournaments");
-        /// Matches endpoint requires substitution of :tournament_id:
-        m.insert(Endpoint::Matches, "/v1/tournaments/:tournament_id:/matches");
-        m.insert(Endpoint::Participants, "/v1/tournaments/:tournament_id:/participants");
-        m.insert(Endpoint::Permissions, "/v1/tournaments/:tournament_id:/permissions");
-        m.insert(Endpoint::Stages, "/v1/tournaments/:tournament_id:/stages");
-        m.insert(Endpoint::Videos, "/v1/tournaments/:tournament_id:/videos");
-        m
-    };
-}
 
 fn check_status(response: reqwest::Result<reqwest::Response>)
     -> Result<reqwest::Response> {
@@ -194,91 +195,32 @@ fn retry<F: Fn() -> reqwest::RequestBuilder>(f: F)
     }
 }
 
-fn parse_token<R: Read>(json_str: R) -> Result<String> {
-    #[derive(Debug, Deserialize)]
-    struct AccessToken {
+fn parse_token<R: Read>(json_str: R) -> Result<AccessToken> {
+    #[derive(Debug, Clone, Deserialize)]
+    struct OauthAccessToken {
         access_token: String,
         expires_in: u64,
         token_type: String,
         scope: Option<String>,
     }
-    let json: AccessToken = serde_json::from_reader(json_str)?;
-    debug!("Toornament access token information: {:?}", json);
-    Ok(json.access_token)
+
+    let oauth = serde_json::from_reader::<_, OauthAccessToken>(json_str)?;
+    Ok(AccessToken {
+        access_token: oauth.access_token,
+        expires: chrono::Local::now().timestamp() as u64 + oauth.expires_in,
+    })
 }
 
-fn get_ep_address(ep: Endpoint) -> Result<String> {
-    API_EP.get(&ep)
-          .map(|a| format!("{}{}", API_BASE, a))
-          .ok_or(Error::Other("Attempted to use unexistent endpoint"))
-}
-
-mod filters_to_string {
-    use ::*;
-
-    pub fn match_filter(f: MatchFilter) -> String {
-        let mut out = Vec::new();
-        match f.featured {
-            Some(f) => out.push(format!("featured={}", if f { 1 } else { 0 })),
-            None => {},
-        }
-        match f.has_result {
-            Some(r) => out.push(format!("has_result={}", if r { 1 } else { 0 })),
-            None => {},
-        }
-        match f.sort {
-            Some(s) => out.push(format!("sort={}", s.to_string())),
-            None => {},
-        }
-        match f.participant_id {
-            Some(i) => out.push(format!("participant_id={}", i.0)),
-            None => {},
-        }
-        match f.tournament_ids {
-            Some(ref i) => out.push(format!("tournament_ids={}",
-                                            i.iter()
-                                             .map(|i| i.0.as_str())
-                                             .collect::<Vec<&str>>()
-                                             .join(","))),
-            None => {},
-        }
-        out.push(format!("with_games={}", if f.with_games { 1 } else { 0 }));
-        match f.before_date {
-            Some(d) => out.push(format!("before_date={}", d)),
-            None => {},
-        }
-        match f.after_date {
-            Some(d) => out.push(format!("after_date={}", d)),
-            None => {},
-        }
-        match f.page {
-            Some(p) => out.push(format!("page={}", p)),
-            None => {},
-        }
-        out.join("&")
-    }
-
-    pub fn tournament_participants(f: TournamentParticipantsFilter) -> String {
-        format!("with_lineup={}&with_custom_fields={}&sort={}&page={}",
-                f.with_lineup as u64,
-                f.with_custom_fields as u64,
-                f.sort.to_string(),
-                f.page)
-    }
-
-    pub fn tournament_videos(f: TournamentVideosFilter) -> String {
-        let mut out = Vec::new();
-        match f.category {
-            Some(c) => out.push(format!("category={}", c.to_string())),
-            None => {},
-        }
-        out.push(format!("sort={}", f.sort.to_string()));
-        match f.page {
-            Some(p) => out.push(format!("page={}", p)),
-            None => {},
-        }
-        out.join("&")
-    }
+fn authenticate(client: &reqwest::Client, client_id: &str, client_secret: &str)
+    -> Result<AccessToken> {
+    let body = format!("grant_type=client_credentials&client_id={}&client_secret={}",
+                        client_id,
+                        client_secret);
+    let address = Endpoint::OauthToken.to_string();
+    let response = retry(|| client.post(&address)
+                                  .header(ContentType::form_url_encoded())
+                                  .body(body.as_str()))?;
+    parse_token(response)
 }
 
 /// Main structure. Should be your point of start using the service.
@@ -287,9 +229,36 @@ mod filters_to_string {
 pub struct Toornament {
     client: reqwest::Client,
     keys: (String, String, String),
-    oauth_token: String,
+    oauth_token: Mutex<AccessToken>,
 }
 impl Toornament {
+    /// Returns currently stored token
+    fn current_token(&self) -> Result<String> {
+        match self.oauth_token.lock() {
+            Ok(g) => Ok(g.access_token.to_owned()),
+            Err(_) => return Err(Error::Rest("Can't get the token")),
+        }
+    }
+
+    /// Always returns fresh token (refreshes it if neeeded)
+    fn fresh_token(&self) -> Result<String> {
+        let mut need_refresh = false;
+        {
+            let access_token = match self.oauth_token.lock() {
+                Ok(g) => g,
+                Err(_) => return Err(Error::Rest("Can't get the token")),
+            };
+            if chrono::Local::now().timestamp() as u64 > access_token.expires {
+                need_refresh = true;
+            }
+        }
+        if need_refresh && !self.refresh() {
+            return Err(Error::Rest("Could not refresh the token"))
+        }
+
+        self.current_token()
+    }
+
     /// Creates new `Toornament` object with client credentials
     /// which is your user API_Token, application's client id and secret.
     /// You may obtain application's credentials [here]
@@ -309,22 +278,34 @@ impl Toornament {
     pub fn with_application<S: Into<String>>(api_token: S,
                                              client_id: S,
                                              client_secret: S) -> Result<Toornament> {
-
         let client = reqwest::Client::new()?;
         let keys = (api_token.into(), client_id.into(), client_secret.into());
-        let body = format!("grant_type=client_credentials&client_id={}&client_secret={}",
-                            keys.1,
-                            keys.2);
-        let address = get_ep_address(Endpoint::OauthToken)?;
-        let response = retry(|| client.post(&address)
-                                      .header(ContentType::form_url_encoded())
-                                      .body(body.as_str()))?;
-        let got_token = parse_token(response)?;
+        let token = authenticate(&client, &keys.1, &keys.2)?;
+
         Ok(Toornament {
             client: client,
             keys: keys,
-            oauth_token: got_token,
+            oauth_token: Mutex::new(token),
         })
+    }
+
+    /// Refreshes the oauth token. Automatically used when it is expired.
+    pub fn refresh(&self) -> bool {
+        let mut g = match self.oauth_token.lock() {
+            Ok(g) => g,
+            Err(e) => {
+                error!("Unable to refresh token: {:?}", e);
+                return false
+            },
+        };
+
+        match authenticate(&self.client, &self.keys.1, &self.keys.2) {
+            Ok(token) => { *g = token; true },
+            Err(e) => {
+                error!("Unable to refresh token: {:?}", e);
+                false
+            }
+        }
     }
 
     /// Consumes `Toornament` object and sets timeout to it
@@ -333,6 +314,16 @@ impl Toornament {
 
         self.client.timeout(Duration::from_secs(seconds));
         self
+    }
+
+    /// Returns Iterator-like objects to work with tournaments and it's subobjects.
+    pub fn tournaments_iter(&self) -> iter::TournamentsIter {
+        iter::TournamentsIter::new(self)
+    }
+
+    /// Returns Iterator-like objects to work with disciplines and it's subobjects.
+    pub fn disciplines_iter(&self) -> iter::DisciplinesIter {
+        iter::DisciplinesIter::new(self)
     }
 
     /// [Returns either a collection of disciplines]
@@ -360,12 +351,10 @@ impl Toornament {
         let id_is_set = id.is_some();
         if let Some(id) = id {
             debug!("Getting disciplines with id: {:?}", id);
-            address = format!("{}/{}",
-                              get_ep_address(Endpoint::Disciplines)?,
-                              id.0);
+            address = Endpoint::DisciplineById(id).to_string();
         } else {
             debug!("Getting all disciplines");
-            address = get_ep_address(Endpoint::Disciplines)?;
+            address = Endpoint::AllDisciplines.to_string();
         }
         let response = request!(self, get, &address)?;
         if id_is_set {
@@ -403,15 +392,13 @@ impl Toornament {
         let id_is_set = id.is_some();
         if let Some(id) = id {
             debug!("Getting tournament with id: {:?}", id);
-            address = format!("{}/{}?with_streams={}",
-                              get_ep_address(Endpoint::PublicTournaments)?,
-                              id.0,
-                              if with_streams { "1" } else { "0" });
+            address = Endpoint::TournamentByIdGet {
+                tournament_id: id,
+                with_streams: with_streams
+            }.to_string();
         } else {
             debug!("Getting all tournaments");
-            address = format!("{}?with_streams={}",
-                              get_ep_address(Endpoint::PublicTournaments)?,
-                              if with_streams { "1" } else { "0" });
+            address = Endpoint::AllTournaments { with_streams: with_streams }.to_string();
         }
         let response = request!(self, get, &address)?;
         if id_is_set {
@@ -438,7 +425,7 @@ impl Toornament {
     /// assert_eq!(tournaments.0.len(), 1);
     /// let mut tournament = tournaments.0.first().unwrap().clone();
     /// assert_eq!(tournament.id, Some(TournamentId("1".to_owned())));
-    /// tournament.website(Some("https://toornament.com".to_owned()));
+    /// tournament = tournament.website(Some("https://toornament.com".to_owned()));
     /// // Editing tournament by calling the appropriate method
     /// let tournament = t.edit_tournament(tournament.clone()).unwrap();
     /// assert_eq!(tournament.website,
@@ -449,11 +436,9 @@ impl Toornament {
         let address;
         let id_is_set = tournament.id.is_some();
         if let Some(id) = tournament.id.clone() {
-            address = format!("{}/{}",
-                              get_ep_address(Endpoint::PublicTournaments)?,
-                              id.0);
+            address = Endpoint::TournamentByIdUpdate(id).to_string();
         } else {
-            address = format!("{}", get_ep_address(Endpoint::PublicTournaments)?);
+            address = Endpoint::TournamentCreate.to_string();
         }
         let body = serde_json::to_string(&tournament)?;
         let response;
@@ -484,9 +469,7 @@ impl Toornament {
     pub fn delete_tournament(&self,
                              id: TournamentId) -> Result<()> {
         debug!("Deleting tournament by id: {:?}", id);
-        let address = format!("{}/{}",
-                              get_ep_address(Endpoint::PublicTournaments)?,
-                              id.0);
+        let address = Endpoint::TournamentByIdUpdate(id).to_string();
         let _ = request!(self, delete, &address)?;
         Ok(())
     }
@@ -508,7 +491,7 @@ impl Toornament {
     /// ```
     pub fn my_tournaments(&self) -> Result<Tournaments> {
         debug!("Getting all tournaments");
-        let address = get_ep_address(Endpoint::MyTournaments)?;
+        let address = Endpoint::MyTournaments.to_string();
         let response = request!(self, get, &address)?;
         Ok(serde_json::from_reader(response)?)
     }
@@ -535,19 +518,19 @@ impl Toornament {
         let response = match match_id {
             Some(match_id) => {
                 debug!("Getting matches by tournament id and match id: {:?} / {:?}", id, match_id);
-                let ep = format!("{}/{}?with_games={}",
-                                 get_ep_address(Endpoint::Matches)?,
-                                 match_id.0,
-                                 if with_games { "1" } else { "0" });
-                let address = ep.replace(":tournament_id:", &id.0);
+                let address = Endpoint::MatchByIdGet {
+                    tournament_id: id,
+                    match_id: match_id,
+                    with_games: with_games,
+                }.to_string();
                 request!(self, get, &address)?
             },
             None => {
                 debug!("Getting matches by tournament id: {:?}", id);
-                let ep = format!("{}?with_games={}",
-                                 get_ep_address(Endpoint::Matches)?,
-                                 if with_games { "1" } else { "0" });
-                let address = ep.replace(":tournament_id:", &id.0);
+                let address = Endpoint::MatchesByTournament {
+                    tournament_id: id,
+                    with_games: with_games,
+                }.to_string();
                 request!(self, get, &address)?
             },
         };
@@ -572,11 +555,11 @@ impl Toornament {
     /// ```
     pub fn matches_by_discipline(&self, id: DisciplineId, filter: MatchFilter)
         -> Result<Matches> {
-        debug!("Getting matches by tournament id: {:?}", id);
-        let ep = format!("{}?{}",
-                         get_ep_address(Endpoint::Matches)?,
-                         filters_to_string::match_filter(filter));
-        let address = ep.replace(":tournament_id:", &id.0);
+        debug!("Getting matches by discipline id: {:?}", id);
+        let address = Endpoint::MatchesByDiscipline {
+            discipline_id: id,
+            filter: filter,
+        }.to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -596,8 +579,8 @@ impl Toornament {
     /// let matches = t.matches(TournamentId("1".to_owned()),
     ///                         Some(MatchId("2".to_owned())),
     ///                         true).unwrap();
-    /// let mut match_to_edit = matches.0.first().unwrap().clone();
-    /// match_to_edit.number(2u64);
+    /// let mut match_to_edit = matches.0.first().unwrap().clone()
+    ///                                .number(2u64);
     /// match_to_edit = t.update_match(TournamentId("1".to_owned()),
     ///                                MatchId("2".to_owned()),
     ///                                match_to_edit).unwrap();
@@ -610,8 +593,10 @@ impl Toornament {
         debug!("Updating a match by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}", get_ep_address(Endpoint::Matches)?, match_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchByIdUpdate {
+            tournament_id: id,
+            match_id: match_id,
+        }.to_string();
         let body = serde_json::to_string(&updated_match)?;
         let response = request_body!(self, patch, &address, body.as_str())?;
 
@@ -636,8 +621,7 @@ impl Toornament {
         debug!("Getting match result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/result", get_ep_address(Endpoint::Matches)?, match_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchResult(id, match_id).to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -670,8 +654,7 @@ impl Toornament {
         debug!("Setting match result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/result", get_ep_address(Endpoint::Matches)?, match_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchResult(id, match_id).to_string();
         let body = serde_json::to_string(&result)?;
         let response = request_body!(self, put, &address, body.as_str())?;
 
@@ -700,11 +683,11 @@ impl Toornament {
         debug!("Getting match games by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/games?with_stats={}",
-                         get_ep_address(Endpoint::Matches)?,
-                         match_id.0,
-                         if with_stats { 1 } else { 0 });
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchGames {
+            tournament_id: id,
+            match_id: match_id,
+            with_stats: with_stats,
+        }.to_string();
         let response = request!(self, get, &address)?;
         Ok(serde_json::from_reader(response)?)
     }
@@ -733,12 +716,12 @@ impl Toornament {
         debug!("Getting match game in details by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/games/{}?with_stats={}",
-                         get_ep_address(Endpoint::Matches)?,
-                         match_id.0,
-                         game_number.0,
-                         if with_stats { 1 } else { 0 });
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchGameByNumberGet {
+            tournament_id: id,
+            match_id: match_id,
+            game_number: game_number,
+            with_stats: with_stats,
+        }.to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -774,11 +757,11 @@ impl Toornament {
         debug!("Updating match game by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/games/{}",
-                         get_ep_address(Endpoint::Matches)?,
-                         match_id.0,
-                         game_number.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchGameByNumberUpdate {
+            tournament_id: id,
+            match_id: match_id,
+            game_number: game_number,
+        }.to_string();
         let body = serde_json::to_string(&game)?;
         let response = request_body!(self, patch, &address, body.as_str())?;
 
@@ -807,11 +790,11 @@ impl Toornament {
         debug!("Getting match game result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/games/{}/result",
-                         get_ep_address(Endpoint::Matches)?,
-                         match_id.0,
-                         game_number.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchGameResultGet {
+            tournament_id: id,
+            match_id: match_id,
+            game_number: game_number,
+        }.to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -848,12 +831,12 @@ impl Toornament {
         debug!("Setting match game result by tournament id and match id: {:?} / {:?}",
                id,
                match_id);
-        let ep = format!("{}/{}/games/{}/result?update_match={}",
-                         get_ep_address(Endpoint::Matches)?,
-                         match_id.0,
-                         game_number.0,
-                         if update_match { 1 } else { 0 });
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::MatchGameResultUpdate {
+            tournament_id: id,
+            match_id: match_id,
+            game_number: game_number,
+            update_match: update_match,
+        }.to_string();
         let body = serde_json::to_string(&result)?;
         let response = request_body!(self, put, &address, body.as_str())?;
 
@@ -881,10 +864,10 @@ impl Toornament {
                                    id: TournamentId,
                                    filter: TournamentParticipantsFilter) -> Result<Participants> {
         debug!("Getting tournament participants by tournament id: {:?}", id);
-        let ep = format!("{}?{}",
-                         get_ep_address(Endpoint::Participants)?,
-                         filters_to_string::tournament_participants(filter));
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::Participants {
+            tournament_id: id,
+            filter: filter,
+        }.to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -911,8 +894,7 @@ impl Toornament {
                                          id: TournamentId,
                                          participant: Participant) -> Result<Participant> {
         debug!("Creating a participant for tournament with id: {:?}", id);
-        let address = get_ep_address(Endpoint::Participants)?
-                      .replace(":tournament_id:", &id.0);
+        let address = Endpoint::ParticipantCreate(id).to_string();
         let body = serde_json::to_string(&participant)?;
         let response = request_body!(self, post, &address, body.as_str())?;
 
@@ -941,8 +923,7 @@ impl Toornament {
                                           id: TournamentId,
                                           participants: Participants) -> Result<Participants> {
         debug!("Creating a list of participants for tournament with id: {:?}", id);
-        let address = get_ep_address(Endpoint::Participants)?
-                      .replace(":tournament_id:", &id.0);
+        let address = Endpoint::ParticipantsUpdate(id).to_string();
         let body = serde_json::to_string(&participants)?;
         let response = request_body!(self, put, &address, body.as_str())?;
 
@@ -970,10 +951,7 @@ impl Toornament {
         debug!("Getting tournament participant by tournament id and participant id: {:?} / {:?}",
                id,
                participant_id);
-        let ep = format!("{}/{}",
-                         get_ep_address(Endpoint::Participants)?,
-                         participant_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -994,7 +972,7 @@ impl Toornament {
     ///                                                ParticipantId("2".to_owned())).unwrap();
     /// assert_eq!(participant.id, Some(ParticipantId("2".to_owned())));
     /// // Update the participant's name and send it
-    /// participant.name("Updated participant name here".to_owned());
+    /// participant = participant.name("Updated participant name here".to_owned());
     /// let updated_participant = t.update_tournament_participant(
     ///     TournamentId("1".to_owned()),
     ///     ParticipantId("2".to_owned()),
@@ -1009,10 +987,7 @@ impl Toornament {
         debug!("Updating a participant for tournament with id and participant id: {:?} / {:?}",
                id,
                participant_id);
-        let ep = format!("{}/{}",
-                         get_ep_address(Endpoint::Participants)?,
-                         participant_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let body = serde_json::to_string(&participant)?;
         let response = request_body!(self, patch, &address, body.as_str())?;
 
@@ -1039,15 +1014,12 @@ impl Toornament {
         debug!("Deleting a participant for tournament with id and participant id: {:?} / {:?}",
                id,
                participant_id);
-        let ep = format!("{}/{}",
-                         get_ep_address(Endpoint::Participants)?,
-                         participant_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let response = request!(self, delete, &address)?;
         if response.status().is_success() {
             Ok(())
         } else {
-            Err(Error::Other("Something went wrong"))
+            Err(Error::Rest("Something went wrong"))
         }
     }
 
@@ -1066,7 +1038,7 @@ impl Toornament {
     /// ```
     pub fn tournament_permissions(&self, id: TournamentId) -> Result<Permissions> {
         debug!("Getting tournament permissions by tournament id: {:?}", id);
-        let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
+        let address = Endpoint::Permissions(id).to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -1100,9 +1072,9 @@ impl Toornament {
                                         id: TournamentId,
                                         permission: Permission) -> Result<Permission> {
         debug!("Creating tournament permissions by tournament id: {:?}", id);
-        let address = get_ep_address(Endpoint::Permissions)?.replace(":tournament_id:", &id.0);
+        let address = Endpoint::Permissions(id).to_string();
         let body = serde_json::to_string(&permission)?;
-        let response = request_body!(self, get, &address, body.as_str())?;
+        let response = request_body!(self, post, &address, body.as_str())?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -1129,10 +1101,7 @@ impl Toornament {
         debug!("Getting tournament permission by tournament id and permission id: {:?} / {:?}",
                id,
                permission_id);
-        let ep = format!("{}/{}",
-                         get_ep_address(Endpoint::Permissions)?,
-                         permission_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::PermissionById(id, permission_id).to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -1177,10 +1146,7 @@ impl Toornament {
                and permission id: {:?} / {:?}",
                id,
                permission_id);
-        let ep = format!("{}/{}",
-                         get_ep_address(Endpoint::Permissions)?,
-                         permission_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::PermissionById(id, permission_id).to_string();
         let wrapped_attributes = WrappedAttributes { attributes: attributes };
         let body = serde_json::to_string(&wrapped_attributes)?;
         let response = request_body!(self, patch, &address, body.as_str())?;
@@ -1210,15 +1176,12 @@ impl Toornament {
         debug!("Deleting a permission for tournament with id and permission id: {:?} / {:?}",
                id,
                permission_id);
-        let ep = format!("{}/{}",
-                         get_ep_address(Endpoint::Permissions)?,
-                         permission_id.0);
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::PermissionById(id, permission_id).to_string();
         let response = request!(self, delete, &address)?;
         if response.status().is_success() {
             Ok(())
         } else {
-            Err(Error::Other("Something went wrong"))
+            Err(Error::Rest("Something went wrong"))
         }
     }
 
@@ -1239,7 +1202,7 @@ impl Toornament {
     /// ```
     pub fn tournament_stages(&self, id: TournamentId) -> Result<Stages> {
         debug!("Getting tournament stages by tournament id: {:?}", id);
-        let address = get_ep_address(Endpoint::Stages)?.replace(":tournament_id:", &id.0);
+        let address = Endpoint::Stages(id).to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -1266,10 +1229,10 @@ impl Toornament {
                              id: TournamentId,
                              filter: TournamentVideosFilter) -> Result<Videos> {
         debug!("Getting tournament videos by tournament id: {:?}", id);
-        let ep = format!("{}?{}",
-                         get_ep_address(Endpoint::Videos)?,
-                         filters_to_string::tournament_videos(filter));
-        let address = ep.replace(":tournament_id:", &id.0);
+        let address = Endpoint::Videos {
+            tournament_id: id,
+            filter: filter
+        }.to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -1278,14 +1241,10 @@ impl Toornament {
 
 #[cfg(test)]
 mod tests {
-    use ::MatchFilter;
-    use ::filters_to_string;
+    fn assert_sync_and_send<T: Sync + Send>() {}
 
     #[test]
-    fn test_match_filter_to_get_string() {
-        let mut f = MatchFilter::default();
-        f.featured(true).has_result(true).page(2i64);
-        assert_eq!(filters_to_string::match_filter(f),
-                   "featured=1&has_result=1&sort=date_asc&with_games=0&page=2");
+    fn test_sync_and_send() {
+        assert_sync_and_send::<::Toornament>();
     }
 }

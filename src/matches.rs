@@ -115,6 +115,38 @@ impl Match {
     builder!(date, DateTime<FixedOffset>);
 }
 
+impl Match {
+    /// Returns iter for the tournament match
+    pub fn iter_tournament<'a>(&self, client: &'a ::Toornament)
+        -> ::TournamentMatchIter<'a> {
+        ::TournamentMatchIter::new(client,
+                                   self.tournament_id.clone(),
+                                   self.id.clone(),
+                                   self.games.is_some())
+    }
+
+    /// Converts into iter for the tournament match
+    pub fn into_iter_tournament<'a>(self, client: &'a ::Toornament)
+        -> ::TournamentMatchIter<'a> {
+        ::TournamentMatchIter::new(client,
+                                   self.tournament_id,
+                                   self.id,
+                                   self.games.is_some())
+    }
+    
+    /// Returns iter for the discipline matches
+    pub fn iter_discipline<'a>(&self, client: &'a ::Toornament)
+        -> ::DisciplineMatchesIter<'a> {
+        ::DisciplineMatchesIter::new(client, self.discipline_id.clone())
+    }
+
+    /// Converts into iter for the discipline matches
+    pub fn into_iter_discipline<'a>(self, client: &'a ::Toornament)
+        -> ::DisciplineMatchesIter<'a> {
+        ::DisciplineMatchesIter::new(client, self.discipline_id)
+    }
+}
+
 /// A list of `Match` objects.
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Matches(pub Vec<Match>);

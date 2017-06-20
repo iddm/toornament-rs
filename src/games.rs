@@ -2,7 +2,7 @@ use matches::MatchStatus;
 use opponents::Opponents;
 
 /// A game number.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct GameNumber(pub i64);
 
 /// A game description.

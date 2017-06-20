@@ -28,7 +28,7 @@ you must know the exact version and specify it in the `[dependencies]` section.
 Check that you have everything installed correctly by compiling a minimal user-crate:
 
 
-```rust
+```rust,no_run
 extern crate toornament;
 use toornament::*;
 

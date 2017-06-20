@@ -7,37 +7,86 @@ object and then send it through the same endpoint. So, by the steps:
 
 1. Editing a tournament object:
 
-    ```rust
-    // Defining a website
-    let tournament_website = Some("https://toornament.com/".to_owned());
+    ```rust,no_run
+    extern crate toornament;
+    use toornament::*;
 
-    // Some checks to be sure that our website is not set and our tournament is not public
-    assert!(tournament.website.is_none());
-    assert_eq!(tournament.public, false);
+    fn main() {
+        let toornament = Toornament::with_application("API_TOKEN",
+                                                      "CLIENT_ID",
+                                                      "CLIENT_SECRET").unwrap()
+                                    .timeout(5);
 
-    // Editing fields of the object
-    tournament.website(tournament_website.clone())
-              .date_start(Some(UTC::today().naive_utc()))
-              .public(true);
+        // Defining a website
+        let tournament_website = Some("https://toornament.com/".to_owned());
 
-    // Checking everything has been done correctly
-    assert_eq!(tournament.website, tournament_website);
-    assert_eq!(tournament.public, true);
+        // Creating a `Tournament` object for adding it to the service
+        let mut tournament = Tournament::create(DisciplineId("wwe2k17".to_owned()),
+                                                "test tournament by fx",
+                                                 16,
+                                                 ParticipantType::Single);
+
+        // Some checks to be sure that our website is not set and our tournament is not public
+        assert!(tournament.website.is_none());
+        assert_eq!(tournament.public, false);
+
+        // Editing fields of the object
+        tournament = tournament.website(tournament_website.clone())
+                               .public(true);
+
+        // Checking everything has been done correctly
+        assert_eq!(tournament.website, tournament_website);
+        assert_eq!(tournament.public, true);
+    }
     ```
 
 2. Sending edited tournament object with re-assigning returned tournament from the service to our
 variable so it is updated with the information from the server.
 
-    ```rust
+    ```rust,ignore
     // Updating our previously created tournament with new website information
     tournament = toornament.edit_tournament(tournament)?;
     ```
 
 3. Making sure that everything has been done correctly:
 
-    ```rust
+    ```rust,ignore
     assert_eq!(tournament.website, tournament_website);
     assert_eq!(tournament.public, true);
     ```
 
 So, we have just edited our tournament!
+
+Another way to do that is via `iter`-like interface:
+
+```rust,no_run
+extern crate toornament;
+use toornament::*;
+
+fn main() {
+    let toornament = Toornament::with_application("API_TOKEN",
+                                                  "CLIENT_ID",
+                                                  "CLIENT_SECRET").unwrap()
+                                .timeout(5);
+
+    // Creating a `Tournament` object for adding it to the service
+    let mut tournament = Tournament::create(DisciplineId("wwe2k17".to_owned()),
+                                            "test tournament by fx",
+                                             16,
+                                             ParticipantType::Single);
+
+    // Some checks to be sure that our website is not set and our tournament is not public
+    assert!(tournament.website.is_none());
+    assert_eq!(tournament.public, false);
+
+    tournament = toornament.tournaments_iter()
+                           .with_id(tournament.id.unwrap())
+                           .edit(|mut t| t.website(Some("https://toornament.com/".to_owned()))
+                                          .public(true))
+                           .update().unwrap();
+
+    // Checking everything has been done correctly
+    assert_eq!(tournament.website, Some("https://toornament.com/".to_owned()));
+    assert_eq!(tournament.public, true);
+}
+```
