@@ -1,6 +1,8 @@
 # toornament-rs
-[![](https://meritbadge.herokuapp.com/toornament)](https://crates.io/crates/toornament) [![](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs) [![](https://img.shields.io/badge/docs-online-2020ff.svg)](https://docs.rs/toornament)
+[![](https://img.shields.io/crates/v/toornament.svg)](https://crates.io/crates/toornament) [![](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs) [![](https://img.shields.io/badge/docs-online-2020ff.svg)]()
+[![Docs](https://docs.rs/mio/badge.svg)](https://docs.rs/toornament)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 
 
 http://toornament.com api bindings.
