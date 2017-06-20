@@ -1,5 +1,6 @@
 # toornament-rs
-[![](https://img.shields.io/crates/v/toornament.svg)](https://crates.io/crates/toornament) [![](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs)
+[![Build status](https://travis-ci.org/vityafx/toornament-rs.svg?branch=master)](https://travis-ci.org/vityafx/toornament-rs)
+[![Crates](https://img.shields.io/crates/v/toornament.svg)](https://crates.io/crates/toornament)
 [![Docs](https://docs.rs/toornament/badge.svg)](https://docs.rs/toornament)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
@@ -16,7 +17,7 @@ There is a [book](https://vityafx.github.io/toornament-rs) and the
 [documentation](https://docs.rs/toornament) which may help you using this library.
 
 ## Implementation
-- Non-mutable interface (no need to synchronize, thread-safe).
+- Non-mutable interface, no need to synchronize, thread-safe.
 - No unsafe blocks (but in the tests:))
 - `reqwest` crate is used for performing requests
 
