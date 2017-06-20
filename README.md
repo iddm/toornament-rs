@@ -18,7 +18,8 @@ There is a [book](https://vityafx.github.io/toornament-rs) and the
 
 ## Implementation
 - Non-mutable interface, no need to synchronize, thread-safe.
-- No unsafe blocks (but in the tests:))
+- No unsafe blocks
+- No unwraps (except the tests)
 - `reqwest` crate is used for performing requests
 
 ## Usage
