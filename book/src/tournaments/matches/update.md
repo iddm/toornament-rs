@@ -27,7 +27,7 @@ fn main() {
 
 This will edit a match with id = 2 and return the updated object.
 
-This can also be done via `fancy` interface:
+This can also be done via `iter`-like interface:
 
 ```rust,no_run
 extern crate toornament;

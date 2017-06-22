@@ -64,12 +64,6 @@ fn main() {
                                                   "CLIENT_SECRET").unwrap()
                                 .timeout(5);
 
-    // Creating a `Tournament` object for adding it to the service
-    let mut tournament = Tournament::create(DisciplineId("wwe2k17".to_owned()),
-                                            "test tournament by fx",
-                                             16,
-                                             ParticipantType::Single);
-
     let result = toornament.tournaments_iter()
                            .create(|| {
                                  Tournament::create(DisciplineId("wwe2k17".to_owned()),

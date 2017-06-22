@@ -27,7 +27,7 @@ there:
 let wwe2k17_discipline = toornament.disciplines(Some(DisciplineId("wwe2k17".to_owned())));
 ```
 
-Via `fancy` interface:
+Via `iter`-like interface:
 
 ```rust,ignore
 let all_disciplines = Disciplines::all();
