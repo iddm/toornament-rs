@@ -2,7 +2,7 @@ extern crate toornament;
 extern crate chrono;
 
 use toornament::*;
-use chrono::UTC;
+use chrono::offset::Utc;
 
 fn workflow() -> Result<()> {
     let tournament_website = Some("https://toornament.com/".to_owned());
@@ -38,7 +38,7 @@ fn workflow() -> Result<()> {
     // Setting the website and making the tournament public so we can fetch matches.
     // For making the tournament public we must also set start date
     tournament = tournament.website(tournament_website.clone())
-                           .date_start(Some(UTC::today().naive_utc()))
+                           .date_start(Some(Utc::today().naive_utc()))
                            .public(true);
     assert_eq!(tournament.website, tournament_website);
     assert_eq!(tournament.public, true);
