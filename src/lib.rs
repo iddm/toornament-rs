@@ -180,7 +180,7 @@ fn check_status(response: reqwest::Result<reqwest::Response>)
     -> Result<reqwest::Response> {
     let response = response?;
     if !response.status().is_success() {
-        return Err(Error::from_response(response))
+        return Err(Error::from(response))
     }
     Ok(response)
 }

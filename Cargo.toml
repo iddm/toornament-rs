@@ -1,6 +1,6 @@
 [package]
 name = "toornament"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Victor Polevoy <maintainer@vpolevoy.com>"]
 description = "Library for Toornament.com the eSports platform"
 repository = "https://github.com/vityafx/toornament-rs"

@@ -124,9 +124,9 @@ pub enum Error {
     Rest(&'static str),
 }
 
-impl Error {
-    #[doc(hidden)]
-    pub fn from_response(mut response: ::reqwest::Response) -> Error {
+
+impl From<::reqwest::Response> for Error {
+    fn from(mut response: ::reqwest::Response) -> Error {
         use std::io::Read;
 
         #[derive(Deserialize)]
