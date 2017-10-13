@@ -42,3 +42,17 @@ macro_rules! builder_so {
         builder!($field, Option<String>);
     };
 }
+
+macro_rules! into_iterator {
+    ($struct:ident, $item:ident) => {
+        /// IntoIterator implementation.
+        impl IntoIterator for $struct {
+            type Item = $item;
+            type IntoIter = ::std::vec::IntoIter<Self::Item>;
+
+            fn into_iter(self) -> Self::IntoIter {
+                self.0.into_iter()
+            }
+        }
+    };
+}

@@ -252,15 +252,7 @@ impl Tournament {
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Tournaments(pub Vec<Tournament>);
 
-/// IntoIterator implementation.
-impl IntoIterator for Tournaments {
-    type Item = Tournament;
-    type IntoIter = ::std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
+into_iterator!(Tournaments, Tournament);
 
 
 #[cfg(test)]

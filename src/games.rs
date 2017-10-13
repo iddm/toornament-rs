@@ -19,3 +19,5 @@ pub struct Game {
 /// Array of games
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Games(pub Vec<Game>);
+
+into_iterator!(Games, Game);

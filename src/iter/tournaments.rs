@@ -98,6 +98,7 @@ impl<'a> Iterator for TournamentsIter<'a> {
     }
 }
 
+
 /// Builders
 impl<'a> TournamentsIter<'a> {
     /// Fetch a tournament with the following name

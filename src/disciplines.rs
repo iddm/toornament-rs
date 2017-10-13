@@ -85,15 +85,7 @@ impl Discipline {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Disciplines(pub Vec<Discipline>);
 
-/// IntoIterator implementation.
-impl IntoIterator for Disciplines {
-    type Item = Discipline;
-    type IntoIter = ::std::vec::IntoIter<Self::Item>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
+into_iterator!(Disciplines, Discipline);
 
 
 #[cfg(test)]
