@@ -147,16 +147,17 @@ macro_rules! request_body {
         {
             let token = $toornament.fresh_token()?;
 
-            retry(|| $toornament.client.$method($address)
-                                       .body($body)
-                                       .header(XApiKey($toornament.keys.0.clone()))
-                                       .header(Authorization(Bearer {
-                                           token: token.clone(),
-                                       })))
+            retry(|| $toornament.client
+                                .$method($address)
+                                .body($body)
+                                .header(XApiKey($toornament.keys.0.clone()))
+                                .header(Authorization(Bearer {
+                                    token: token.clone(),
+                                }))
+            )
         }
     };
 }
-
 
 
 mod custom_headers {
@@ -185,7 +186,7 @@ fn check_status(response: reqwest::Result<reqwest::Response>)
     Ok(response)
 }
 
-fn retry<F: Fn() -> reqwest::RequestBuilder>(f: F)
+fn retry<'a, F: Fn() -> &'a mut reqwest::RequestBuilder>(f: F)
     -> Result<reqwest::Response> {
     let f2 = || check_status(f().send());
     // retry on a ConnectionAborted, which occurs if it's been a while since the last request
@@ -278,9 +279,9 @@ impl Toornament {
     pub fn with_application<S: Into<String>>(api_token: S,
                                              client_id: S,
                                              client_secret: S) -> Result<Toornament> {
-        let client = reqwest::Client::new()?;
+        let mut client = reqwest::Client::new();
         let keys = (api_token.into(), client_id.into(), client_secret.into());
-        let token = authenticate(&client, &keys.1, &keys.2)?;
+        let token = authenticate(&mut client, &keys.1, &keys.2)?;
 
         Ok(Toornament {
             client: client,
@@ -309,11 +310,11 @@ impl Toornament {
     }
 
     /// Consumes `Toornament` object and sets timeout to it
-    pub fn timeout(mut self, seconds: u64) -> Toornament {
+    pub fn timeout(mut self, seconds: u64) -> Result<Toornament> {
         use std::time::Duration;
 
-        self.client.timeout(Duration::from_secs(seconds));
-        self
+        self.client = reqwest::ClientBuilder::new().timeout(Duration::from_secs(seconds)).build()?;
+        Ok(self)
     }
 
     /// Returns Iterator-like objects to work with tournaments and it's subobjects.

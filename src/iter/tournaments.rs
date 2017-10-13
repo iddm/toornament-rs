@@ -4,6 +4,7 @@ use iter::permissions::PermissionsIter;
 use iter::tournament_matches::TournamentMatchesIter;
 use iter::stages::StagesIter;
 use iter::videos::VideosIter;
+use std::iter::Iterator;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -34,6 +35,13 @@ impl<'a> TournamentsIter<'a> {
             fetch: TournamentsIterFetch::All,
             // ..Default::default()
         }
+    }
+}
+impl<'a> Iterator for TournamentsIter<'a> {
+    type Item = Tournament;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        None
     }
 }
 
