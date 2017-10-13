@@ -131,12 +131,13 @@ macro_rules! request {
     ($toornament:ident, $method:ident, $address:expr) => {
         {
             let token = $toornament.fresh_token()?;
+            let mut builder = $toornament.client.$method($address);
+            builder.header(XApiKey($toornament.keys.0.clone()))
+                   .header(Authorization(Bearer {
+                       token: token.clone(),
+                   }));
 
-            retry(|| $toornament.client.$method($address)
-                                       .header(XApiKey($toornament.keys.0.clone()))
-                                       .header(Authorization(Bearer {
-                                           token: token.clone(),
-                                       })))
+            retry(builder)
         }
     }
 }
@@ -146,15 +147,13 @@ macro_rules! request_body {
     ($toornament:ident, $method:ident, $address:expr, $body:expr) => {
         {
             let token = $toornament.fresh_token()?;
-
-            retry(|| $toornament.client
-                                .$method($address)
-                                .body($body)
-                                .header(XApiKey($toornament.keys.0.clone()))
-                                .header(Authorization(Bearer {
-                                    token: token.clone(),
-                                }))
-            )
+            let mut builder = $toornament.client.$method($address);
+            builder.body($body)
+                   .header(XApiKey($toornament.keys.0.clone()))
+                   .header(Authorization(Bearer {
+                       token: token.clone(),
+                   }));
+            retry(builder)
         }
     };
 }
@@ -186,9 +185,10 @@ fn check_status(response: reqwest::Result<reqwest::Response>)
     Ok(response)
 }
 
-fn retry<'a, F: Fn() -> &'a mut reqwest::RequestBuilder>(f: F)
+fn retry(mut builder: reqwest::RequestBuilder)
     -> Result<reqwest::Response> {
-    let f2 = || check_status(f().send());
+    let builder = &mut builder;
+    let mut f2 = || check_status(builder.send());
     // retry on a ConnectionAborted, which occurs if it's been a while since the last request
     match f2() {
         Err(_) => f2(),
@@ -218,10 +218,10 @@ fn authenticate(client: &reqwest::Client, client_id: &str, client_secret: &str)
                         client_id,
                         client_secret);
     let address = Endpoint::OauthToken.to_string();
-    let response = retry(|| client.post(&address)
-                                  .header(ContentType::form_url_encoded())
-                                  .body(body.as_str()))?;
-    parse_token(response)
+    let mut builder = client.post(&address);
+    builder.header(ContentType::form_url_encoded())
+           .body(body);
+    parse_token(retry(builder)?)
 }
 
 /// Main structure. Should be your point of start using the service.
@@ -445,11 +445,11 @@ impl Toornament {
         let response;
         if id_is_set {
             debug!("Editing tournament: {:#?}", tournament);
-            response = request_body!(self, patch, &address, body.as_str())?;
+            response = request_body!(self, patch, &address, body)?;
 
         } else {
             debug!("Creating tournament: {:#?}", tournament);
-            response = request_body!(self, post, &address, body.as_str())?;
+            response = request_body!(self, post, &address, body)?;
         }
         Ok(serde_json::from_reader(response)?)
     }
@@ -599,7 +599,7 @@ impl Toornament {
             match_id: match_id,
         }.to_string();
         let body = serde_json::to_string(&updated_match)?;
-        let response = request_body!(self, patch, &address, body.as_str())?;
+        let response = request_body!(self, patch, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -657,7 +657,7 @@ impl Toornament {
                match_id);
         let address = Endpoint::MatchResult(id, match_id).to_string();
         let body = serde_json::to_string(&result)?;
-        let response = request_body!(self, put, &address, body.as_str())?;
+        let response = request_body!(self, put, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -764,7 +764,7 @@ impl Toornament {
             game_number: game_number,
         }.to_string();
         let body = serde_json::to_string(&game)?;
-        let response = request_body!(self, patch, &address, body.as_str())?;
+        let response = request_body!(self, patch, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -839,7 +839,7 @@ impl Toornament {
             update_match: update_match,
         }.to_string();
         let body = serde_json::to_string(&result)?;
-        let response = request_body!(self, put, &address, body.as_str())?;
+        let response = request_body!(self, put, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -897,7 +897,7 @@ impl Toornament {
         debug!("Creating a participant for tournament with id: {:?}", id);
         let address = Endpoint::ParticipantCreate(id).to_string();
         let body = serde_json::to_string(&participant)?;
-        let response = request_body!(self, post, &address, body.as_str())?;
+        let response = request_body!(self, post, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -926,7 +926,7 @@ impl Toornament {
         debug!("Creating a list of participants for tournament with id: {:?}", id);
         let address = Endpoint::ParticipantsUpdate(id).to_string();
         let body = serde_json::to_string(&participants)?;
-        let response = request_body!(self, put, &address, body.as_str())?;
+        let response = request_body!(self, put, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -990,7 +990,7 @@ impl Toornament {
                participant_id);
         let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let body = serde_json::to_string(&participant)?;
-        let response = request_body!(self, patch, &address, body.as_str())?;
+        let response = request_body!(self, patch, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -1075,7 +1075,7 @@ impl Toornament {
         debug!("Creating tournament permissions by tournament id: {:?}", id);
         let address = Endpoint::Permissions(id).to_string();
         let body = serde_json::to_string(&permission)?;
-        let response = request_body!(self, post, &address, body.as_str())?;
+        let response = request_body!(self, post, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }
@@ -1150,7 +1150,7 @@ impl Toornament {
         let address = Endpoint::PermissionById(id, permission_id).to_string();
         let wrapped_attributes = WrappedAttributes { attributes: attributes };
         let body = serde_json::to_string(&wrapped_attributes)?;
-        let response = request_body!(self, patch, &address, body.as_str())?;
+        let response = request_body!(self, patch, &address, body)?;
 
         Ok(serde_json::from_reader(response)?)
     }

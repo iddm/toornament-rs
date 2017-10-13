@@ -1,5 +1,4 @@
-//! This module introduces iterator-like interface to the toornament.
-//! The content of this module is not really an iterator, it just may look so.
+//! This module introduces iterator interface to the toornament.
 //! It was made to provide an easy and rust-idiomatic way to interact with the service.
 //! Note that everything here is "lazy". Think of it as you use an iterator over remote data.
 //!

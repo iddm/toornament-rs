@@ -3,6 +3,7 @@ use common::Date;
 use disciplines::DisciplineId;
 use participants::ParticipantType;
 use streams::Streams;
+use std::iter::IntoIterator;
 
 
 /// A tournament identity.
@@ -250,6 +251,16 @@ impl Tournament {
 /// A list of `Tournament` objects.
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Tournaments(pub Vec<Tournament>);
+
+/// IntoIterator implementation.
+impl IntoIterator for Tournaments {
+    type Item = Tournament;
+    type IntoIter = ::std::vec::IntoIter<Tournament>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
 
 
 #[cfg(test)]

@@ -24,6 +24,13 @@ pub struct TournamentsIter<'a> {
     name: Option<String>,
     /// Fetch type
     fetch: TournamentsIterFetch,
+
+    /// Fetched tournaments iterator
+    tournaments_iter: Option<<Tournaments as IntoIterator>::IntoIter>,
+    // tournaments_iter: Option<::std::vec::IntoIter<Tournaments>>,
+    /// True when there was an attempt to fetch tournaments, false otherwise
+    fetched: bool,
+    
 }
 impl<'a> TournamentsIter<'a> {
     /// Creates new tournaments iterator
@@ -33,15 +40,61 @@ impl<'a> TournamentsIter<'a> {
             with_streams: false,
             name: None,
             fetch: TournamentsIterFetch::All,
+            tournaments_iter: None,
+            fetched: false,
             // ..Default::default()
         }
+    }
+
+    /// Fetches the tournaments for iterating later, if have not fetched yet
+    fn fetch(&mut self) {
+        if self.fetched {
+            return;
+        }
+
+        self.fetched = true;
+
+        let tournaments = match self.fetch {
+            TournamentsIterFetch::All => {
+                self.client.tournaments(None, self.with_streams)
+            },
+            TournamentsIterFetch::My => {
+                self.client.my_tournaments()
+            },
+        };
+
+        let mut tournaments = match tournaments {
+            Ok(t) => t,
+            Err(e) => {
+                error!("Could not fetch tournaments during iteration: {:?}", e);
+                self.tournaments_iter = None;
+                return;
+            }
+        };
+
+        if let Some(ref name) = self.name {
+            tournaments.0.retain(|t| &t.name == name);
+        }
+
+        self.tournaments_iter = Some(tournaments.into_iter());
+    }
+
+    /// Refetch the tournaments
+    pub fn refetch(&mut self) {
+        self.fetched = false;
+        self.fetch();
     }
 }
 impl<'a> Iterator for TournamentsIter<'a> {
     type Item = Tournament;
 
     fn next(&mut self) -> Option<Self::Item> {
-        None
+        self.fetch();
+
+        match self.tournaments_iter {
+            Some(ref mut iter) => iter.next(),
+            None => None,
+        }
     }
 }
 
@@ -86,27 +139,6 @@ impl<'a> TournamentsIter<'a> {
             client: self.client,
             creator: Box::new(creator),
         }
-    }
-}
-
-/// Terminators
-impl<'a> TournamentsIter<'a> {
-    /// Return the collection
-    pub fn collect<T: From<Tournaments>>(self) -> Result<T> {
-        let mut tournaments = match self.fetch {
-            TournamentsIterFetch::All => {
-                self.client.tournaments(None, self.with_streams)
-            },
-            TournamentsIterFetch::My => {
-                self.client.my_tournaments()
-            },
-        }?;
-
-        if let Some(name) = self.name {
-            tournaments.0.retain(|t| t.name == name);
-        }
-
-        Ok(T::from(tournaments))
     }
 }
 
