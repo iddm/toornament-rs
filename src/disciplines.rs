@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::iter::IntoIterator;
 
 use common::TeamSize;
 
@@ -83,6 +84,16 @@ impl Discipline {
 /// A list of `Discipline` objects.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Disciplines(pub Vec<Discipline>);
+
+/// IntoIterator implementation.
+impl IntoIterator for Disciplines {
+    type Item = Discipline;
+    type IntoIter = ::std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
 
 
 #[cfg(test)]

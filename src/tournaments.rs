@@ -255,7 +255,7 @@ pub struct Tournaments(pub Vec<Tournament>);
 /// IntoIterator implementation.
 impl IntoIterator for Tournaments {
     type Item = Tournament;
-    type IntoIter = ::std::vec::IntoIter<Tournament>;
+    type IntoIter = ::std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.0.into_iter()

@@ -5,6 +5,9 @@ pub struct DisciplinesIter<'a> {
     client: &'a Toornament,
 
     all: bool,
+
+    disciplines_iter: Option<<Disciplines as IntoIterator>::IntoIter>,
+    fetched: bool,
 }
 impl<'a> DisciplinesIter<'a> {
     /// Creates new disciplines iterator
@@ -12,13 +15,56 @@ impl<'a> DisciplinesIter<'a> {
         DisciplinesIter {
             client: client,
             all: true,
+            disciplines_iter: None,
+            fetched: false,
         }
     }
 
-    /// Fetch all disciplines
+    /// Marks for fetching all the disciplines
     pub fn all(mut self) -> Self {
         self.all = true;
         self
+    }
+
+    /// Fetches the disciplines
+    fn fetch(&mut self) {
+        if self.fetched {
+            return;
+        }
+
+        self.fetched = true;
+
+        let disciplines = match self.all {
+            _ => self.client.disciplines(None),
+        };
+
+        self.disciplines_iter = match disciplines {
+            Ok(d) => Some(d.into_iter()),
+            Err(e) => {
+                error!("Could not fetch disciplines during iteration: {:?}", e);
+                None
+            }
+        };
+    }
+
+    /// Refetch the disciplines
+    pub fn refetch(&mut self) {
+        self.fetched = false;
+        self.fetch();
+    }
+}
+
+/// Iterator implementation
+impl<'a> Iterator for DisciplinesIter<'a> {
+    type Item = Discipline;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.fetch();
+
+        match self.disciplines_iter {
+            Some(ref mut iter) => iter.next(),
+            None => None,
+        }
     }
 }
 
@@ -29,16 +75,6 @@ impl<'a> DisciplinesIter<'a> {
         DisciplineIter {
             client: self.client,
             id: id,
-        }
-    }
-}
-
-/// Terminators
-impl<'a> DisciplinesIter<'a> {
-    /// Fetch the discipline
-    pub fn collect<T: From<Disciplines>>(self) -> Result<T> {
-        match self.all {
-            _ => Ok(T::from(self.client.disciplines(None)?)),
         }
     }
 }

@@ -4,7 +4,6 @@ use iter::permissions::PermissionsIter;
 use iter::tournament_matches::TournamentMatchesIter;
 use iter::stages::StagesIter;
 use iter::videos::VideosIter;
-use std::iter::Iterator;
 
 
 #[derive(Debug, Copy, Clone)]
@@ -27,7 +26,6 @@ pub struct TournamentsIter<'a> {
 
     /// Fetched tournaments iterator
     tournaments_iter: Option<<Tournaments as IntoIterator>::IntoIter>,
-    // tournaments_iter: Option<::std::vec::IntoIter<Tournaments>>,
     /// True when there was an attempt to fetch tournaments, false otherwise
     fetched: bool,
     
@@ -85,6 +83,8 @@ impl<'a> TournamentsIter<'a> {
         self.fetch();
     }
 }
+
+/// Iterator implementation
 impl<'a> Iterator for TournamentsIter<'a> {
     type Item = Tournament;
 
