@@ -10,7 +10,7 @@ fn workflow() -> Result<()> {
     let toornament = Toornament::with_application("API_TOKEN",
                                                   "CLIENT_ID",
                                                   "CLIENT_SECRET")?
-                                .timeout(5);
+                                .timeout(5)?;
 
     // Listing all the tournaments
     println!("Tournaments: {:?}\n", toornament.tournaments(None, true));
