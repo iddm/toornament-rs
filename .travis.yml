@@ -9,7 +9,6 @@ matrix:
 sudo: false
 
 cache:
-    cargo
     apt: true
     directories:
         - $TRAVIS_BUILD_DIR/target
