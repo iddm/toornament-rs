@@ -1,6 +1,5 @@
 extern crate skeptic;
 
-
 fn list_markdown_files(dir_path: &str) -> Vec<String> {
     use std::fs::read_dir;
     use std::ascii::AsciiExt;
@@ -23,10 +22,10 @@ fn list_markdown_files(dir_path: &str) -> Vec<String> {
         match e.metadata() {
             Ok(ref md) if md.is_dir() => {
                 out.append(&mut list_markdown_files(entry_path.to_str().unwrap()))
-            },
+            }
             Ok(ref md) if !md.is_file() => continue,
             Err(e) => panic!("Could not read the metadata of a dir entry: {:?}", e),
-            _ => {},
+            _ => {}
         };
 
         let extension = match entry_path.extension() {

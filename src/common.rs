@@ -5,7 +5,6 @@ use serde;
 /// A common type for toornament dates.
 pub type Date = NaiveDate;
 
-
 macro_rules! enum_number {
     ($name:ident { $($variant:ident = $value:expr, )* }) => {
         #[allow(missing_docs)]

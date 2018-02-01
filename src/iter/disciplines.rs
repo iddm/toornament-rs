@@ -73,8 +73,12 @@ impl<'a> DisciplineIter<'a> {
 impl<'a> DisciplineIter<'a> {
     /// Fetch the discipline
     pub fn collect<T: From<Discipline>>(self) -> Result<T> {
-        /// Option::take() returns reference? wtf?
-        match self.client.disciplines(Some(self.id.clone()))?.0.first().take() {
+        match self.client
+            .disciplines(Some(self.id.clone()))?
+            .0
+            .first()
+            .take()
+        {
             Some(d) => Ok(T::from(d.to_owned())),
             None => Err(Error::Iter(IterError::NoSuchDiscipline(self.id))),
         }

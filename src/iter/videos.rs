@@ -1,6 +1,5 @@
 use ::*;
 
-
 /// Tournament videos iterator
 pub struct VideosIter<'a> {
     client: &'a Toornament,
@@ -34,6 +33,7 @@ impl<'a> VideosIter<'a> {
 impl<'a> VideosIter<'a> {
     /// Collect the videos
     pub fn collect<T: From<Videos>>(self) -> Result<T> {
-        Ok(T::from(self.client.tournament_videos(self.tournament_id, self.filter)?))
+        Ok(T::from(self.client
+            .tournament_videos(self.tournament_id, self.filter)?))
     }
 }

@@ -5,7 +5,6 @@ use iter::tournament_matches::TournamentMatchesIter;
 use iter::stages::StagesIter;
 use iter::videos::VideosIter;
 
-
 #[derive(Debug, Copy, Clone)]
 enum TournamentsIterFetch {
     All,
@@ -72,8 +71,7 @@ impl<'a> TournamentsIter<'a> {
     }
 
     /// Create a tournament
-    pub fn create<F: 'static + FnMut() -> Tournament>(self, creator: F)
-        -> TournamentCreator<'a> {
+    pub fn create<F: 'static + FnMut() -> Tournament>(self, creator: F) -> TournamentCreator<'a> {
         TournamentCreator {
             client: self.client,
             creator: Box::new(creator),
@@ -86,12 +84,8 @@ impl<'a> TournamentsIter<'a> {
     /// Return the collection
     pub fn collect<T: From<Tournaments>>(self) -> Result<T> {
         let mut tournaments = match self.fetch {
-            TournamentsIterFetch::All => {
-                self.client.tournaments(None, self.with_streams)
-            },
-            TournamentsIterFetch::My => {
-                self.client.my_tournaments()
-            },
+            TournamentsIterFetch::All => self.client.tournaments(None, self.with_streams),
+            TournamentsIterFetch::My => self.client.my_tournaments(),
         }?;
 
         if let Some(name) = self.name {
@@ -101,7 +95,6 @@ impl<'a> TournamentsIter<'a> {
         Ok(T::from(tournaments))
     }
 }
-
 
 /// A remote tournament iterator
 pub struct TournamentIter<'a> {
@@ -141,8 +134,10 @@ impl<'a> TournamentIter<'a> {
 /// Modifiers
 impl<'a> TournamentIter<'a> {
     /// Tournament lazy editor
-    pub fn edit<F: 'static + FnMut(Tournament) -> Tournament>(self, editor: F)
-        -> TournamentEditor<'a> {
+    pub fn edit<F: 'static + FnMut(Tournament) -> Tournament>(
+        self,
+        editor: F,
+    ) -> TournamentEditor<'a> {
         TournamentEditor {
             client: self.client,
             id: self.id,
@@ -181,7 +176,8 @@ impl<'a> TournamentIter<'a> {
 impl<'a> TournamentIter<'a> {
     /// Return the tournament
     pub fn collect<T: From<Tournament>>(self) -> Result<T> {
-        let tournaments = self.client.tournaments(Some(self.id.clone()), self.with_streams)?;
+        let tournaments = self.client
+            .tournaments(Some(self.id.clone()), self.with_streams)?;
         let tournament = match tournaments.0.first() {
             Some(t) => t.to_owned(),
             None => return Err(Error::Iter(IterError::NoSuchTournament(self.id))),
@@ -212,7 +208,8 @@ pub struct TournamentEditor<'a> {
 impl<'a> TournamentEditor<'a> {
     /// Sends the edited tournament
     pub fn update(mut self) -> Result<Tournament> {
-        let tournaments = self.client.tournaments(Some(self.id.clone()), self.with_streams)?;
+        let tournaments = self.client
+            .tournaments(Some(self.id.clone()), self.with_streams)?;
         let original = match tournaments.0.first() {
             Some(t) => t.to_owned(),
             None => return Err(Error::Iter(IterError::NoSuchTournament(self.id))),
@@ -223,7 +220,8 @@ impl<'a> TournamentEditor<'a> {
 
     /// Update and return iter
     pub fn update_iter(mut self) -> Result<TournamentIter<'a>> {
-        let tournaments = self.client.tournaments(Some(self.id.clone()), self.with_streams)?;
+        let tournaments = self.client
+            .tournaments(Some(self.id.clone()), self.with_streams)?;
         let original = match tournaments.0.first() {
             Some(t) => t.to_owned(),
             None => return Err(Error::Iter(IterError::NoSuchTournament(self.id))),

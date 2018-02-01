@@ -75,12 +75,47 @@ mod tests {
 
         let ps: PermissionAttributes = serde_json::from_str(s).unwrap();
         assert_eq!(ps.0.len(), 7);
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Edit).is_some());
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Report).is_some());
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Place).is_some());
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Register).is_some());
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Authorize).is_some());
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Fill).is_some());
-        assert!(ps.0.iter().find(|p| *p == &PermissionAttribute::Delete).is_some());
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Edit)
+                .is_some()
+        );
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Report)
+                .is_some()
+        );
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Place)
+                .is_some()
+        );
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Register)
+                .is_some()
+        );
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Authorize)
+                .is_some()
+        );
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Fill)
+                .is_some()
+        );
+        assert!(
+            ps.0
+                .iter()
+                .find(|p| *p == &PermissionAttribute::Delete)
+                .is_some()
+        );
     }
 }

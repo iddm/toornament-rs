@@ -43,7 +43,6 @@ pub struct Video {
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Videos(pub Vec<Video>);
 
-
 #[cfg(test)]
 mod tests {
     use ::*;
@@ -69,6 +68,9 @@ mod tests {
         assert_eq!(v.name, "Game 1: TSM vs. EnVyUs");
         assert_eq!(v.url, "https://www.youtube.com/watch?v=SI5QgDJkaSU");
         assert_eq!(v.language, "en");
-        assert_eq!(v.match_id, Some(MatchId("5617bb3af3df95f2318b4567".to_owned())));
+        assert_eq!(
+            v.match_id,
+            Some(MatchId("5617bb3af3df95f2318b4567".to_owned()))
+        );
     }
 }

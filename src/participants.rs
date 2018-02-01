@@ -112,7 +112,7 @@ pub struct Participant {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
     /// Participant check-in. This property is only available when "check-in" option is
-    /// enabled for this tournament. 
+    /// enabled for this tournament.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub check_in: Option<bool>,
     /// This property is only available when the query parameter 'with_custom_fields' is true.
@@ -146,8 +146,8 @@ pub struct Participants(pub Vec<Participant>);
 
 #[cfg(test)]
 mod tests {
-    use ::serde_json;
-    use ::{ Participants, CustomFieldType };
+    use serde_json;
+    use {CustomFieldType, Participants};
 
     #[test]
     fn test_participant_parse() {
@@ -211,10 +211,22 @@ mod tests {
         assert_eq!(p.id.unwrap().0, "378426939508809728");
         assert_eq!(p.name, "Evil Geniuses");
         let logo = p.logo.unwrap();
-        assert_eq!(logo.icon_large_square, Some("http://api.toornament.com/id/icon_large_square".to_owned()));
-        assert_eq!(logo.extra_small_square, Some("http://api.toornament.com/id/extra_small_square".to_owned()));
-        assert_eq!(logo.medium_small_square, Some("http://api.toornament.com/id/medium_small_square".to_owned()));
-        assert_eq!(logo.medium_large_square, Some("http://api.toornament.com/id/medium_large_square".to_owned()));
+        assert_eq!(
+            logo.icon_large_square,
+            Some("http://api.toornament.com/id/icon_large_square".to_owned())
+        );
+        assert_eq!(
+            logo.extra_small_square,
+            Some("http://api.toornament.com/id/extra_small_square".to_owned())
+        );
+        assert_eq!(
+            logo.medium_small_square,
+            Some("http://api.toornament.com/id/medium_small_square".to_owned())
+        );
+        assert_eq!(
+            logo.medium_large_square,
+            Some("http://api.toornament.com/id/medium_large_square".to_owned())
+        );
         assert_eq!(p.country, Some("US".to_owned()));
         let lineup = p.lineup.unwrap().0;
         assert_eq!(lineup.len(), 1);

@@ -1,7 +1,6 @@
 use ::*;
 use iter::games::GamesIter;
 
-
 /// A tournament matches iterator
 pub struct TournamentMatchesIter<'a> {
     client: &'a Toornament,
@@ -54,7 +53,11 @@ impl<'a> TournamentMatchesIter<'a> {
 impl<'a> TournamentMatchesIter<'a> {
     /// Fetch matches
     pub fn collect<T: From<Matches>>(self) -> Result<T> {
-        Ok(T::from(self.client.matches(self.tournament_id, None, self.with_games)?))
+        Ok(T::from(self.client.matches(
+            self.tournament_id,
+            None,
+            self.with_games,
+        )?))
     }
 }
 
@@ -71,10 +74,12 @@ pub struct TournamentMatchIter<'a> {
 }
 impl<'a> TournamentMatchIter<'a> {
     /// Creates new tournament match iter
-    pub fn new(client: &'a Toornament,
-               tournament_id: TournamentId,
-               match_id: MatchId,
-               with_games: bool) -> TournamentMatchIter<'a> {
+    pub fn new(
+        client: &'a Toornament,
+        tournament_id: TournamentId,
+        match_id: MatchId,
+        with_games: bool,
+    ) -> TournamentMatchIter<'a> {
         TournamentMatchIter {
             client: client,
             tournament_id: tournament_id,
@@ -87,8 +92,7 @@ impl<'a> TournamentMatchIter<'a> {
 /// Modifiers
 impl<'a> TournamentMatchIter<'a> {
     /// Tournament match lazy editor
-    pub fn edit<F: 'static + FnMut(Match) -> Match>(self, editor: F)
-        -> TournamentMatchEditor<'a> {
+    pub fn edit<F: 'static + FnMut(Match) -> Match>(self, editor: F) -> TournamentMatchEditor<'a> {
         TournamentMatchEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -97,7 +101,7 @@ impl<'a> TournamentMatchIter<'a> {
             editor: Box::new(editor),
         }
     }
-    
+
     /// Fetch match result
     pub fn result(self) -> TournamentMatchResultIter<'a> {
         TournamentMatchResultIter {
@@ -117,12 +121,17 @@ impl<'a> TournamentMatchIter<'a> {
 impl<'a> TournamentMatchIter<'a> {
     /// Fetch the match
     pub fn collect<T: From<Match>>(self) -> Result<T> {
-        let matches = self.client.matches(self.tournament_id.clone(),
-                                          Some(self.match_id.clone()),
-                                          self.with_games)?;
+        let matches = self.client.matches(
+            self.tournament_id.clone(),
+            Some(self.match_id.clone()),
+            self.with_games,
+        )?;
         match matches.0.first() {
             Some(m) => Ok(T::from(m.to_owned())),
-            None => Err(Error::Iter(IterError::NoSuchMatch(self.tournament_id, self.match_id))),
+            None => Err(Error::Iter(IterError::NoSuchMatch(
+                self.tournament_id,
+                self.match_id,
+            ))),
         }
     }
 }
@@ -140,8 +149,10 @@ pub struct TournamentMatchResultIter<'a> {
 /// Modifiers
 impl<'a> TournamentMatchResultIter<'a> {
     /// Tournament match result lazy editor
-    pub fn edit<F: 'static + FnMut(MatchResult) -> MatchResult>(self, editor: F)
-        -> TournamentMatchResultEditor<'a> {
+    pub fn edit<F: 'static + FnMut(MatchResult) -> MatchResult>(
+        self,
+        editor: F,
+    ) -> TournamentMatchResultEditor<'a> {
         TournamentMatchResultEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -159,7 +170,6 @@ impl<'a> TournamentMatchResultIter<'a> {
     }
 }
 
-
 /// A lazy match result editor
 pub struct TournamentMatchResultEditor<'a> {
     client: &'a Toornament,
@@ -176,11 +186,12 @@ pub struct TournamentMatchResultEditor<'a> {
 impl<'a> TournamentMatchResultEditor<'a> {
     /// Adds or edits the match result
     pub fn update(mut self) -> Result<MatchResult> {
-        let original = self.client.match_result(self.tournament_id.clone(), self.match_id.clone())?;
-        self.client.set_match_result(self.tournament_id, self.match_id, (self.editor)(original))
+        let original = self.client
+            .match_result(self.tournament_id.clone(), self.match_id.clone())?;
+        self.client
+            .set_match_result(self.tournament_id, self.match_id, (self.editor)(original))
     }
 }
-
 
 /// A lazy tournament match editor
 pub struct TournamentMatchEditor<'a> {
@@ -200,16 +211,21 @@ pub struct TournamentMatchEditor<'a> {
 impl<'a> TournamentMatchEditor<'a> {
     /// Edits the match
     pub fn update(mut self) -> Result<Match> {
-        let matches = self.client.matches(self.tournament_id.clone(),
-                                          Some(self.match_id.clone()),
-                                          self.with_games)?;
+        let matches = self.client.matches(
+            self.tournament_id.clone(),
+            Some(self.match_id.clone()),
+            self.with_games,
+        )?;
         let original = match matches.0.first() {
             Some(m) => m.to_owned(),
-            None => return Err(Error::Iter(IterError::NoSuchMatch(self.tournament_id,
-                                                                  self.match_id))),
+            None => {
+                return Err(Error::Iter(IterError::NoSuchMatch(
+                    self.tournament_id,
+                    self.match_id,
+                )))
+            }
         };
-        self.client.update_match(self.tournament_id,
-                                 self.match_id,
-                                 (self.editor)(original))
+        self.client
+            .update_match(self.tournament_id, self.match_id, (self.editor)(original))
     }
 }

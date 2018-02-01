@@ -14,9 +14,11 @@ pub struct GamesIter<'a> {
 
 impl<'a> GamesIter<'a> {
     /// Creates new games iterator
-    pub fn new(client: &'a Toornament,
-               tournament_id: TournamentId,
-               match_id: MatchId) -> GamesIter<'a> {
+    pub fn new(
+        client: &'a Toornament,
+        tournament_id: TournamentId,
+        match_id: MatchId,
+    ) -> GamesIter<'a> {
         GamesIter {
             client: client,
             tournament_id: tournament_id,
@@ -53,10 +55,13 @@ impl<'a> GamesIter<'a> {
 impl<'a> GamesIter<'a> {
     /// Fetch the games
     pub fn collect<T: From<Games>>(self) -> Result<T> {
-        Ok(T::from(self.client.match_games(self.tournament_id, self.match_id, self.with_stats)?))
+        Ok(T::from(self.client.match_games(
+            self.tournament_id,
+            self.match_id,
+            self.with_stats,
+        )?))
     }
 }
-
 
 /// A match game iterator
 pub struct GameIter<'a> {
@@ -75,8 +80,7 @@ pub struct GameIter<'a> {
 /// Modifiers
 impl<'a> GameIter<'a> {
     /// Match game lazy editor
-    pub fn edit<F: 'static + FnMut(Game) -> Game>(self, editor: F)
-        -> GameEditor<'a> {
+    pub fn edit<F: 'static + FnMut(Game) -> Game>(self, editor: F) -> GameEditor<'a> {
         GameEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -102,13 +106,14 @@ impl<'a> GameIter<'a> {
 impl<'a> GameIter<'a> {
     /// Fetch the game
     pub fn collect<T: From<Game>>(self) -> Result<T> {
-        Ok(T::from(self.client.match_game(self.tournament_id,
-                                          self.match_id,
-                                          self.number,
-                                          self.with_stats)?))
+        Ok(T::from(self.client.match_game(
+            self.tournament_id,
+            self.match_id,
+            self.number,
+            self.with_stats,
+        )?))
     }
 }
-
 
 /// A lazy game result editor
 pub struct GameEditor<'a> {
@@ -130,17 +135,20 @@ pub struct GameEditor<'a> {
 impl<'a> GameEditor<'a> {
     /// Edits the game
     pub fn update(mut self) -> Result<Game> {
-        let original = self.client.match_game(self.tournament_id.clone(),
-                                              self.match_id.clone(),
-                                              self.number,
-                                              self.with_stats)?;
-        self.client.update_match_game(self.tournament_id,
-                                      self.match_id,
-                                      self.number,
-                                      (self.editor)(original))
+        let original = self.client.match_game(
+            self.tournament_id.clone(),
+            self.match_id.clone(),
+            self.number,
+            self.with_stats,
+        )?;
+        self.client.update_match_game(
+            self.tournament_id,
+            self.match_id,
+            self.number,
+            (self.editor)(original),
+        )
     }
 }
-
 
 /// A match game result iterator
 pub struct GameResultIter<'a> {
@@ -157,8 +165,10 @@ pub struct GameResultIter<'a> {
 /// Modifiers
 impl<'a> GameResultIter<'a> {
     /// Game result lazy editor
-    pub fn edit<F: 'static + FnMut(MatchResult) -> MatchResult>(self, editor: F)
-        -> GameResultEditor<'a> {
+    pub fn edit<F: 'static + FnMut(MatchResult) -> MatchResult>(
+        self,
+        editor: F,
+    ) -> GameResultEditor<'a> {
         GameResultEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -173,12 +183,13 @@ impl<'a> GameResultIter<'a> {
 impl<'a> GameResultIter<'a> {
     /// Fetch the game result
     pub fn collect<T: From<MatchResult>>(self) -> Result<T> {
-        Ok(T::from(self.client.match_game_result(self.tournament_id,
-                                      self.match_id,
-                                      self.number)?))
+        Ok(T::from(self.client.match_game_result(
+            self.tournament_id,
+            self.match_id,
+            self.number,
+        )?))
     }
 }
-
 
 /// A lazy game result editor
 pub struct GameResultEditor<'a> {
@@ -198,13 +209,17 @@ pub struct GameResultEditor<'a> {
 impl<'a> GameResultEditor<'a> {
     /// Edits the match
     pub fn update(mut self) -> Result<MatchResult> {
-        let original = self.client.match_game_result(self.tournament_id.clone(),
-                                                     self.match_id.clone(),
-                                                     self.number)?;
-        self.client.update_match_game_result(self.tournament_id,
-                                             self.match_id,
-                                             self.number,
-                                             (self.editor)(original),
-                                             true)
+        let original = self.client.match_game_result(
+            self.tournament_id.clone(),
+            self.match_id.clone(),
+            self.number,
+        )?;
+        self.client.update_match_game_result(
+            self.tournament_id,
+            self.match_id,
+            self.number,
+            (self.editor)(original),
+            true,
+        )
     }
 }

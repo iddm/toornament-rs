@@ -1,6 +1,5 @@
 use ::*;
 
-
 /// Tournament permissions iterator
 pub struct PermissionsIter<'a> {
     client: &'a Toornament,
@@ -30,8 +29,7 @@ impl<'a> PermissionsIter<'a> {
     }
 
     /// Create a permission
-    pub fn create<F: 'static + FnMut() -> Permission>(self, creator: F)
-        -> PermissionCreator<'a> {
+    pub fn create<F: 'static + FnMut() -> Permission>(self, creator: F) -> PermissionCreator<'a> {
         PermissionCreator {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -59,8 +57,11 @@ pub struct PermissionIter<'a> {
 }
 impl<'a> PermissionIter<'a> {
     /// Create new permission iter
-    pub fn new(client: &'a Toornament, tournament_id: TournamentId, id: PermissionId)
-        -> PermissionIter {
+    pub fn new(
+        client: &'a Toornament,
+        tournament_id: TournamentId,
+        id: PermissionId,
+    ) -> PermissionIter {
         PermissionIter {
             client: client,
             tournament_id: tournament_id,
@@ -108,15 +109,16 @@ impl<'a> PermissionIter<'a> {
 impl<'a> PermissionIter<'a> {
     /// Fetch the permission
     pub fn collect<T: From<Permission>>(self) -> Result<T> {
-        Ok(T::from(self.client.tournament_permission(self.tournament_id, self.id)?))
+        Ok(T::from(self.client
+            .tournament_permission(self.tournament_id, self.id)?))
     }
 
     /// Delete this permission
     pub fn delete(self) -> Result<()> {
-        self.client.delete_tournament_permission(self.tournament_id, self.id)
+        self.client
+            .delete_tournament_permission(self.tournament_id, self.id)
     }
 }
-
 
 /// A lazy permission creator
 pub struct PermissionCreator<'a> {
@@ -132,21 +134,21 @@ pub struct PermissionCreator<'a> {
 impl<'a> PermissionCreator<'a> {
     /// Creates the permission
     pub fn update(mut self) -> Result<Permission> {
-        self.client.create_tournament_permission(self.tournament_id, (self.creator)())
+        self.client
+            .create_tournament_permission(self.tournament_id, (self.creator)())
     }
 
     /// Create and return iter
     pub fn update_iter(mut self) -> Result<PermissionIter<'a>> {
-        let created = self.client.create_tournament_permission(self.tournament_id.clone(),
-                                                               (self.creator)())?;
-        
+        let created = self.client
+            .create_tournament_permission(self.tournament_id.clone(), (self.creator)())?;
+
         match created.id {
             Some(id) => Ok(PermissionIter::new(self.client, self.tournament_id, id)),
             None => Err(Error::Iter(IterError::NoPermissionId)),
         }
     }
 }
-
 
 // TODO
 /* There is no ability to edit permissions yet
@@ -203,13 +205,18 @@ pub struct PermissionAttributesIter<'a> {
 impl<'a> PermissionAttributesIter<'a> {
     /// Fetch the attributes
     pub fn collect<T: From<PermissionAttributes>>(self) -> Result<T> {
-        Ok(T::from(self.client.tournament_permission(self.tournament_id, self.permission_id)?
-                              .attributes))
+        Ok(T::from(
+            self.client
+                .tournament_permission(self.tournament_id, self.permission_id)?
+                .attributes,
+        ))
     }
 
     /// Edit the permission attributes
-    pub fn edit<F: 'static + FnMut(PermissionAttributes) -> PermissionAttributes>(self, editor: F)
-        -> PermissionAttributesEditor<'a> {
+    pub fn edit<F: 'static + FnMut(PermissionAttributes) -> PermissionAttributes>(
+        self,
+        editor: F,
+    ) -> PermissionAttributesEditor<'a> {
         PermissionAttributesEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -228,7 +235,6 @@ impl<'a> PermissionAttributesIter<'a> {
     }
 }
 
-
 /// A lazy permission attributes editor
 pub struct PermissionAttributesEditor<'a> {
     client: &'a Toornament,
@@ -245,22 +251,28 @@ pub struct PermissionAttributesEditor<'a> {
 impl<'a> PermissionAttributesEditor<'a> {
     /// Edits and the permission attributes
     pub fn update(mut self) -> Result<Permission> {
-        let original = self.client.tournament_permission(self.tournament_id.clone(),
-                                                         self.permission_id.clone())?.attributes;
+        let original = self.client
+            .tournament_permission(self.tournament_id.clone(), self.permission_id.clone())?
+            .attributes;
         let edited = (self.editor)(original);
-        self.client.update_tournament_permission_attributes(self.tournament_id,
-                                                            self.permission_id,
-                                                            edited)
+        self.client.update_tournament_permission_attributes(
+            self.tournament_id,
+            self.permission_id,
+            edited,
+        )
     }
 
     /// Edit and return iter
     pub fn update_iter(mut self) -> Result<PermissionAttributesIter<'a>> {
-        let original = self.client.tournament_permission(self.tournament_id.clone(),
-                                                         self.permission_id.clone())?.attributes;
+        let original = self.client
+            .tournament_permission(self.tournament_id.clone(), self.permission_id.clone())?
+            .attributes;
         let edited = (self.editor)(original);
-        let _ = self.client.update_tournament_permission_attributes(self.tournament_id.clone(),
-                                                                    self.permission_id.clone(),
-                                                                    edited)?;
+        let _ = self.client.update_tournament_permission_attributes(
+            self.tournament_id.clone(),
+            self.permission_id.clone(),
+            edited,
+        )?;
         Ok(PermissionAttributesIter {
             client: self.client,
             tournament_id: self.tournament_id,

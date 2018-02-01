@@ -43,7 +43,7 @@ impl fmt::Display for CreateDateSortFilter {
 #[derive(Debug, Clone)]
 pub struct MatchFilter {
     /// When set to `true`, returns matches from featured tournaments in the collection.
-    /// When set to `false`, it returns matches from tournaments without featured. 
+    /// When set to `false`, it returns matches from tournaments without featured.
     /// Featured tournaments are tagged by Toornament as major tournaments for a given discipline.
     pub featured: Option<bool>,
     /// When set to `true`, returns only matches with a result.
@@ -95,7 +95,7 @@ impl MatchFilter {
 /// A filter for tournament participants
 #[derive(Debug, Clone)]
 pub struct TournamentParticipantsFilter {
-    /// When set to `true`, it will include the lineup of the team (works only if the participant 
+    /// When set to `true`, it will include the lineup of the team (works only if the participant
     /// is a team).
     pub with_lineup: bool,
     /// When set to `true`, it will include the list of custom fields for this participant.
@@ -128,7 +128,7 @@ impl TournamentParticipantsFilter {
 pub struct TournamentVideosFilter {
     /// Category of the videos.
     pub category: Option<VideoCategory>,
-    /// Sorts the collection in a particular order. `CreatedAscending` sorts the videos from older 
+    /// Sorts the collection in a particular order. `CreatedAscending` sorts the videos from older
     /// to newer; `CreatedDescending` sorts the videos from newer to older.
     pub sort: CreateDateSortFilter,
     /// Page requested of the list.

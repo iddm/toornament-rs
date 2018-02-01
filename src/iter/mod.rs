@@ -77,7 +77,7 @@
 //!                             .result()
 //!                             .collect::<MatchResult>();
 //! ```
-//! 
+//!
 //! Note that iter-like interface is lazy - no action is done before you actually do something.
 //! So, the finish states are usually a modifier of an iterator (like `matches()` of
 //! `TournamentIter`) or a `collect()` methods.

@@ -28,7 +28,6 @@ pub enum ToornamentErrorScope {
     Body,
 }
 
-
 /// A list of toornament service errors
 #[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct ToornamentError {
@@ -59,7 +58,6 @@ pub struct ToornamentServiceError {
     pub errors: ToornamentErrors,
 }
 
-
 /// Iter errors
 #[derive(Debug, Clone)]
 pub enum IterError {
@@ -81,21 +79,22 @@ impl Display for IterError {
         match *self {
             IterError::NoSuchTournament(ref id) => {
                 s = format!("A tournament with id ({}) does not exist", id.0);
-            },
+            }
             IterError::NoTournamentId(_) => {
                 s = format!("A tournament does not have an id set.");
-            },
+            }
             IterError::NoSuchMatch(ref t_id, ref m_id) => {
-                s = format!("A match does not exist (tournament id = {}, match id = {})",
-                            t_id.0,
-                            m_id.0);
-            },
+                s = format!(
+                    "A match does not exist (tournament id = {}, match id = {})",
+                    t_id.0, m_id.0
+                );
+            }
             IterError::NoPermissionId => {
                 s = format!("A permission does not have an id set.");
-            },
+            }
             IterError::NoSuchDiscipline(ref id) => {
                 s = format!("A permission with id ({}) does not exist.", id.0);
-            },
+            }
         };
         fmt.write_str(&s)
     }
@@ -124,7 +123,6 @@ pub enum Error {
     Rest(&'static str),
 }
 
-
 impl From<::reqwest::Response> for Error {
     fn from(mut response: ::reqwest::Response) -> Error {
         use std::io::Read;
@@ -139,11 +137,11 @@ impl From<::reqwest::Response> for Error {
         let _ = response.read_to_string(&mut body);
         if status == ::reqwest::StatusCode::TooManyRequests {
             if let Ok(value) = ::serde_json::from_str::<TooManyRequests>(&body) {
-                return Error::RateLimited(value.retry_after)
+                return Error::RateLimited(value.retry_after);
             }
         } else if !status.is_success() {
             if let Ok(e) = ::serde_json::from_str::<ToornamentServiceError>(&body) {
-                return Error::Toornament(status, e)
+                return Error::Toornament(status, e);
             }
         }
         Error::Status(status, body)
@@ -195,8 +193,9 @@ impl StdError for Error {
             Error::Date(ref inner) => inner.description(),
             Error::Iter(_) => "An iter error",
             Error::Rest(msg) => msg,
-            Error::Toornament(status, _) |
-            Error::Status(status, _) => status.canonical_reason().unwrap_or("Unknown bad HTTP status"),
+            Error::Toornament(status, _) | Error::Status(status, _) => status
+                .canonical_reason()
+                .unwrap_or("Unknown bad HTTP status"),
             Error::RateLimited(_) => "Rate limited",
         }
     }

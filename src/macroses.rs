@@ -1,9 +1,3 @@
-macro_rules! format_date {
-    ($date:expr) => {
-        $date.format("%Y-%m-%d").to_string()
-    }
-}
-
 macro_rules! builder {
     ($field:ident, $field_type:ty) => {
         /// A builder method for $field with `$field_type` type.

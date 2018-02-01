@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use common::TeamSize;
 
-
 /// Additional fields for `Discipline` wrap.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AdditionalFields(pub HashMap<String, HashMap<String, String>>);
@@ -43,11 +42,13 @@ pub struct Discipline {
 }
 impl Discipline {
     /// Creates new `Discipline` object.
-    pub fn new<S: Into<String>>(id: DisciplineId,
-                                name: S,
-                                short_name: S,
-                                full_name: S,
-                                copyrights: S) -> Discipline {
+    pub fn new<S: Into<String>>(
+        id: DisciplineId,
+        name: S,
+        short_name: S,
+        full_name: S,
+        copyrights: S,
+    ) -> Discipline {
         Discipline {
             id: id,
             name: name.into(),
@@ -84,11 +85,10 @@ impl Discipline {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Disciplines(pub Vec<Discipline>);
 
-
 #[cfg(test)]
 mod tests {
     extern crate serde_json;
-    use ::{ DisciplineId, Discipline, Disciplines };
+    use {Discipline, DisciplineId, Disciplines};
 
     #[test]
     fn test_discipline_parse() {
@@ -170,16 +170,20 @@ mod tests {
 
         assert_eq!(ds.0.len(), 2);
         let correct_disciplines = vec![
-            Discipline::new(DisciplineId("counterstrike_go".to_owned()),
-                            "Counter-Strike: GO",
-                            "CS:GO",
-                            "Counter-Strike: Global Offensive",
-                            "Valve Software"),
-            Discipline::new(DisciplineId("quakelive".to_owned()),
-                            "Quake Live",
-                            "QL",
-                            "Quake Live",
-                            "id Software"),
+            Discipline::new(
+                DisciplineId("counterstrike_go".to_owned()),
+                "Counter-Strike: GO",
+                "CS:GO",
+                "Counter-Strike: Global Offensive",
+                "Valve Software",
+            ),
+            Discipline::new(
+                DisciplineId("quakelive".to_owned()),
+                "Quake Live",
+                "QL",
+                "Quake Live",
+                "id Software",
+            ),
         ];
         let mut iter = ds.0.iter().zip(correct_disciplines.iter());
         while let Some(pair) = iter.next() {

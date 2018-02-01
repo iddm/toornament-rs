@@ -1,9 +1,8 @@
-use matches::{ MatchFormat, MatchType };
+use matches::{MatchFormat, MatchType};
 use common::Date;
 use disciplines::DisciplineId;
 use participants::ParticipantType;
 use streams::Streams;
-
 
 /// A tournament identity.
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -125,13 +124,15 @@ pub struct Tournament {
 }
 impl Tournament {
     /// Creates new `Tournament` object.
-    pub fn new<S: Into<String>>(id: Option<TournamentId>,
-                                discipline: DisciplineId,
-                                name: S,
-                                status: TournamentStatus,
-                                online: bool,
-                                public: bool,
-                                size: i64) -> Tournament {
+    pub fn new<S: Into<String>>(
+        id: Option<TournamentId>,
+        discipline: DisciplineId,
+        name: S,
+        status: TournamentStatus,
+        online: bool,
+        public: bool,
+        size: i64,
+    ) -> Tournament {
         Tournament {
             id: id,
             discipline: discipline,
@@ -164,10 +165,12 @@ impl Tournament {
 
     /// A method which creates `Tournament` object for creation (Toornament::edit_tournament)
     /// purposes.
-    pub fn create<S: Into<String>>(discipline: DisciplineId,
-                                   name: S,
-                                   size: i64,
-                                   participant_type: ParticipantType) -> Tournament {
+    pub fn create<S: Into<String>>(
+        discipline: DisciplineId,
+        name: S,
+        size: i64,
+        participant_type: ParticipantType,
+    ) -> Tournament {
         Tournament {
             id: None,
             discipline: discipline,
@@ -230,18 +233,19 @@ impl Tournament {
     /// Returns iter for the tournament
     pub fn iter<'a>(&self, client: &'a ::Toornament) -> Option<::TournamentIter<'a>> {
         match self.id.clone() {
-            Some(id) => Some(::TournamentIter::new(client, id)
-                                              .with_streams(self.streams.is_some())),
+            Some(id) => {
+                Some(::TournamentIter::new(client, id).with_streams(self.streams.is_some()))
+            }
             None => None,
         }
     }
 
     /// Converts tournament into an iter
-    pub fn into_iter<'a>(self, client: &'a ::Toornament)
-        -> Option<::TournamentIter<'a>> {
+    pub fn into_iter<'a>(self, client: &'a ::Toornament) -> Option<::TournamentIter<'a>> {
         match self.id {
-            Some(id) => Some(::TournamentIter::new(client, id)
-                                              .with_streams(self.streams.is_some())),
+            Some(id) => {
+                Some(::TournamentIter::new(client, id).with_streams(self.streams.is_some()))
+            }
             None => None,
         }
     }
@@ -250,7 +254,6 @@ impl Tournament {
 /// A list of `Tournament` objects.
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Tournaments(pub Vec<Tournament>);
-
 
 #[cfg(test)]
 mod tests {
@@ -337,7 +340,10 @@ mod tests {
         assert_eq!(t.match_type, Some(MatchType::Duel));
         assert_eq!(t.organization, Some("Avery Bullock".to_owned()));
         assert_eq!(t.website, Some("http://www.toornament.com".to_owned()));
-        assert_eq!(t.description, Some("My description \n on multiple lines".to_owned()));
+        assert_eq!(
+            t.description,
+            Some("My description \n on multiple lines".to_owned())
+        );
         assert_eq!(t.rules, Some("My rules \n on multiple lines".to_owned()));
         assert_eq!(t.prize, Some("1 - 10,000$ \n 2 - 5,000$".to_owned()));
         assert!(t.streams.is_some());

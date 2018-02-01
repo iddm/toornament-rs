@@ -1,4 +1,4 @@
-use chrono::{ DateTime, FixedOffset };
+use chrono::{DateTime, FixedOffset};
 
 use disciplines::DisciplineId;
 use tournaments::TournamentId;
@@ -29,7 +29,7 @@ pub enum MatchStatus {
     /// Means it has started but not yet ended
     Running,
     /// Indicates the match is finished
-    Completed
+    Completed,
 }
 
 /// A Match format enumeration.
@@ -117,32 +117,27 @@ impl Match {
 
 impl Match {
     /// Returns iter for the tournament match
-    pub fn iter_tournament<'a>(&self, client: &'a ::Toornament)
-        -> ::TournamentMatchIter<'a> {
-        ::TournamentMatchIter::new(client,
-                                   self.tournament_id.clone(),
-                                   self.id.clone(),
-                                   self.games.is_some())
+    pub fn iter_tournament<'a>(&self, client: &'a ::Toornament) -> ::TournamentMatchIter<'a> {
+        ::TournamentMatchIter::new(
+            client,
+            self.tournament_id.clone(),
+            self.id.clone(),
+            self.games.is_some(),
+        )
     }
 
     /// Converts into iter for the tournament match
-    pub fn into_iter_tournament<'a>(self, client: &'a ::Toornament)
-        -> ::TournamentMatchIter<'a> {
-        ::TournamentMatchIter::new(client,
-                                   self.tournament_id,
-                                   self.id,
-                                   self.games.is_some())
+    pub fn into_iter_tournament<'a>(self, client: &'a ::Toornament) -> ::TournamentMatchIter<'a> {
+        ::TournamentMatchIter::new(client, self.tournament_id, self.id, self.games.is_some())
     }
-    
+
     /// Returns iter for the discipline matches
-    pub fn iter_discipline<'a>(&self, client: &'a ::Toornament)
-        -> ::DisciplineMatchesIter<'a> {
+    pub fn iter_discipline<'a>(&self, client: &'a ::Toornament) -> ::DisciplineMatchesIter<'a> {
         ::DisciplineMatchesIter::new(client, self.discipline_id.clone())
     }
 
     /// Converts into iter for the discipline matches
-    pub fn into_iter_discipline<'a>(self, client: &'a ::Toornament)
-        -> ::DisciplineMatchesIter<'a> {
+    pub fn into_iter_discipline<'a>(self, client: &'a ::Toornament) -> ::DisciplineMatchesIter<'a> {
         ::DisciplineMatchesIter::new(client, self.discipline_id)
     }
 }
@@ -160,14 +155,13 @@ pub struct MatchResult {
     pub opponents: Opponents,
 }
 
-
 #[cfg(test)]
 mod tests {
-    use ::serde_json;
+    use serde_json;
 
     #[test]
     fn test_match_parse() {
-        use matches::{ Match, MatchType, MatchStatus };
+        use matches::{Match, MatchStatus, MatchType};
         let string = r#"
         {
             "id": "5617bb3af3df95f2318b4567",
@@ -211,7 +205,7 @@ mod tests {
 
     #[test]
     fn test_parse_match_results() {
-        use matches::{ MatchStatus, MatchResult };
+        use matches::{MatchResult, MatchStatus};
         use common::MatchResultSimple;
         let string = r#"
         {

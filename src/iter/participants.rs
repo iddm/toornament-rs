@@ -1,6 +1,5 @@
 use ::*;
 
-
 /// A remote participants iterator
 pub struct ParticipantsIter<'a> {
     client: &'a Toornament,
@@ -8,7 +7,7 @@ pub struct ParticipantsIter<'a> {
     /// Participants of the following tournament id
     tournament_id: TournamentId,
     /// Participants with filter
-    filter: TournamentParticipantsFilter
+    filter: TournamentParticipantsFilter,
 }
 impl<'a> ParticipantsIter<'a> {
     /// Create new participants iter
@@ -44,8 +43,10 @@ impl<'a> ParticipantsIter<'a> {
     }
 
     /// Update the list of participants
-    pub fn edit<F: 'static + FnMut(Participants) -> Participants>(self, editor: F)
-        -> ParticipantsEditor<'a> {
+    pub fn edit<F: 'static + FnMut(Participants) -> Participants>(
+        self,
+        editor: F,
+    ) -> ParticipantsEditor<'a> {
         ParticipantsEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -55,8 +56,7 @@ impl<'a> ParticipantsIter<'a> {
     }
 
     /// Create a participant
-    pub fn create<F: 'static + FnMut() -> Participant>(self, creator: F)
-        -> ParticipantCreator<'a> {
+    pub fn create<F: 'static + FnMut() -> Participant>(self, creator: F) -> ParticipantCreator<'a> {
         ParticipantCreator {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -69,7 +69,8 @@ impl<'a> ParticipantsIter<'a> {
 impl<'a> ParticipantsIter<'a> {
     /// Collects the participants
     pub fn collect<T: From<Participants>>(self) -> Result<T> {
-        Ok(T::from(self.client.tournament_participants(self.tournament_id, self.filter)?))
+        Ok(T::from(self.client
+            .tournament_participants(self.tournament_id, self.filter)?))
     }
 }
 
@@ -89,10 +90,11 @@ pub struct ParticipantsEditor<'a> {
 impl<'a> ParticipantsEditor<'a> {
     /// Sends the edited participant
     pub fn update(mut self) -> Result<Participants> {
-        let original = self.client.tournament_participants(self.tournament_id.clone(),
-                                                           self.filter)?;
+        let original = self.client
+            .tournament_participants(self.tournament_id.clone(), self.filter)?;
         let edited = (self.editor)(original);
-        self.client.update_tournament_participants(self.tournament_id, edited)
+        self.client
+            .update_tournament_participants(self.tournament_id, edited)
     }
 }
 
@@ -107,8 +109,11 @@ pub struct ParticipantIter<'a> {
 }
 impl<'a> ParticipantIter<'a> {
     /// Create new participant iter
-    pub fn new(client: &'a Toornament, tournament_id: TournamentId, id: ParticipantId)
-        -> ParticipantIter {
+    pub fn new(
+        client: &'a Toornament,
+        tournament_id: TournamentId,
+        id: ParticipantId,
+    ) -> ParticipantIter {
         ParticipantIter {
             client: client,
             tournament_id: tournament_id,
@@ -120,8 +125,10 @@ impl<'a> ParticipantIter<'a> {
 /// Modifiers
 impl<'a> ParticipantIter<'a> {
     /// Edit the participant
-    pub fn edit<F: 'static + FnMut(Participant) -> Participant>(self, editor: F)
-        -> ParticipantEditor<'a> {
+    pub fn edit<F: 'static + FnMut(Participant) -> Participant>(
+        self,
+        editor: F,
+    ) -> ParticipantEditor<'a> {
         ParticipantEditor {
             client: self.client,
             tournament_id: self.tournament_id,
@@ -135,20 +142,22 @@ impl<'a> ParticipantIter<'a> {
 impl<'a> ParticipantIter<'a> {
     /// Collects the participant
     pub fn collect<T: From<Participant>>(self) -> Result<T> {
-        Ok(T::from(self.client.tournament_participant(self.tournament_id, self.id)?))
+        Ok(T::from(self.client
+            .tournament_participant(self.tournament_id, self.id)?))
     }
-    
+
     /// Delete the participant
     pub fn delete(self) -> Result<()> {
-        self.client.delete_tournament_participant(self.tournament_id, self.id)
+        self.client
+            .delete_tournament_participant(self.tournament_id, self.id)
     }
 
     /// Update the participant
     pub fn update(self, participant: Participant) -> Result<Participant> {
-        self.client.update_tournament_participant(self.tournament_id, self.id, participant)
+        self.client
+            .update_tournament_participant(self.tournament_id, self.id, participant)
     }
 }
-
 
 /// A lazy participant creator
 pub struct ParticipantCreator<'a> {
@@ -164,7 +173,8 @@ pub struct ParticipantCreator<'a> {
 impl<'a> ParticipantCreator<'a> {
     /// Sends the edited participant
     pub fn update(mut self) -> Result<Participant> {
-        self.client.create_tournament_participant(self.tournament_id, (self.creator)())
+        self.client
+            .create_tournament_participant(self.tournament_id, (self.creator)())
     }
 }
 
@@ -184,9 +194,10 @@ pub struct ParticipantEditor<'a> {
 impl<'a> ParticipantEditor<'a> {
     /// Sends the edited participant
     pub fn update(mut self) -> Result<Participant> {
-        let original = self.client.tournament_participant(self.tournament_id.clone(),
-                                                          self.id.clone())?;
+        let original = self.client
+            .tournament_participant(self.tournament_id.clone(), self.id.clone())?;
         let edited = (self.editor)(original);
-        self.client.update_tournament_participant(self.tournament_id, self.id, edited)
+        self.client
+            .update_tournament_participant(self.tournament_id, self.id, edited)
     }
 }

@@ -1,6 +1,5 @@
 use ::*;
 
-
 /// Tournament stages iterator
 pub struct StagesIter<'a> {
     client: &'a Toornament,
