@@ -17,7 +17,7 @@ cache:
 before_script:
   - export PATH="$PATH:$HOME/.cargo/bin"
   - rustup install nightly
-  - which rustfmt || cargo +nightly install --force rustfmt-nightly
+  - cargo +nightly install --force rustfmt-nightly
 
 script:
   - cargo +nightly fmt -- --write-mode diff
