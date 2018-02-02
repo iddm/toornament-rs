@@ -1,0 +1,220 @@
+<!DOCTYPE HTML>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Get tournament stages - Toornament Rust API</title>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <meta name="description" content="The book about toornament.com rust library.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <base href="../">
+
+        <link rel="stylesheet" href="book.css">
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800" rel="stylesheet" type="text/css">
+        <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro:500" rel="stylesheet" type="text/css">
+
+        <link rel="shortcut icon" href="favicon.png">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme -->
+        
+
+        
+
+        <!-- Fetch Clipboard.js from CDN but have a local fallback -->
+        <script src="https://cdn.jsdelivr.net/clipboard.js/1.6.1/clipboard.min.js"></script>
+        <script>
+            if (typeof Clipboard == 'undefined') {
+                document.write(unescape("%3Cscript src='clipboard.min.js'%3E%3C/script%3E"));
+            }
+        </script>
+
+    </head>
+    <body class="light">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script type="text/javascript">
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script type="text/javascript">
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { } 
+            if (theme === null || theme === undefined) { theme = 'light'; }
+            document.body.className = theme;
+            document.querySelector('html').className = theme;
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script type="text/javascript">
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            document.querySelector('html').classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <ol class="chapter"><li class="affix"><a href="misc/introduction.html">Introduction</a></li><li><a href="quickstart/intro.html"><strong aria-hidden="true">1.</strong> Quick start</a></li><li><a href="tournaments/intro.html"><strong aria-hidden="true">2.</strong> Tournaments</a></li><li><ol class="section"><li><a href="tournaments/create_tournament.html"><strong aria-hidden="true">2.1.</strong> Create a tournament</a></li><li><a href="tournaments/edit.html"><strong aria-hidden="true">2.2.</strong> Edit a tournament</a></li><li><a href="tournaments/delete_tournament.html"><strong aria-hidden="true">2.3.</strong> Delete a tournament</a></li><li><a href="tournaments/list_all.html"><strong aria-hidden="true">2.4.</strong> List tournaments</a></li><li><a href="tournaments/list_my.html"><strong aria-hidden="true">2.5.</strong> List my tournaments</a></li><li><a href="tournaments/matches/intro.html"><strong aria-hidden="true">2.6.</strong> Matches and games</a></li><li><ol class="section"><li><a href="tournaments/matches/list_by_tournament.html"><strong aria-hidden="true">2.6.1.</strong> List tournament's matches</a></li><li><a href="tournaments/matches/list_by_discipline.html"><strong aria-hidden="true">2.6.2.</strong> List matches by a discipline</a></li><li><a href="tournaments/matches/update.html"><strong aria-hidden="true">2.6.3.</strong> Update match</a></li><li><a href="tournaments/matches/get_game.html"><strong aria-hidden="true">2.6.4.</strong> Get match game</a></li><li><a href="tournaments/matches/update_game.html"><strong aria-hidden="true">2.6.5.</strong> Update match game</a></li><li><a href="tournaments/matches/set_result.html"><strong aria-hidden="true">2.6.6.</strong> Set match result</a></li><li><a href="tournaments/matches/get_result.html"><strong aria-hidden="true">2.6.7.</strong> Get match result</a></li><li><a href="tournaments/matches/set_game_result.html"><strong aria-hidden="true">2.6.8.</strong> Set or update game result</a></li><li><a href="tournaments/matches/get_game_result.html"><strong aria-hidden="true">2.6.9.</strong> Get game result</a></li></ol></li><li><a href="tournaments/participants/intro.html"><strong aria-hidden="true">2.7.</strong> Participants</a></li><li><ol class="section"><li><a href="tournaments/participants/list_participants.html"><strong aria-hidden="true">2.7.1.</strong> List tournament's participants</a></li><li><a href="tournaments/participants/get_participants.html"><strong aria-hidden="true">2.7.2.</strong> Get participant</a></li><li><a href="tournaments/participants/create_participant.html"><strong aria-hidden="true">2.7.3.</strong> Create participant</a></li><li><a href="tournaments/participants/update_single.html"><strong aria-hidden="true">2.7.4.</strong> Update single participant</a></li><li><a href="tournaments/participants/update_multiple.html"><strong aria-hidden="true">2.7.5.</strong> Update multiple participants</a></li><li><a href="tournaments/participants/delete_participant.html"><strong aria-hidden="true">2.7.6.</strong> Delete participant</a></li></ol></li><li><a href="tournaments/permissions/intro.html"><strong aria-hidden="true">2.8.</strong> Permissions</a></li><li><ol class="section"><li><a href="tournaments/permissions/list_permissions.html"><strong aria-hidden="true">2.8.1.</strong> List tournament's user permissions</a></li><li><a href="tournaments/permissions/create_permission.html"><strong aria-hidden="true">2.8.2.</strong> Create a tournament's user permission</a></li><li><a href="tournaments/permissions/get_permission.html"><strong aria-hidden="true">2.8.3.</strong> Get tournament's user permission</a></li><li><a href="tournaments/permissions/change.html"><strong aria-hidden="true">2.8.4.</strong> Edit tournament's user permission attributes</a></li><li><a href="tournaments/permissions/delete_permission.html"><strong aria-hidden="true">2.8.5.</strong> Delete tournament's user permission</a></li></ol></li><li><a href="tournaments/stages.html" class="active"><strong aria-hidden="true">2.9.</strong> Get tournament stages</a></li><li><a href="tournaments/videos.html"><strong aria-hidden="true">2.10.</strong> Get tournament videos</a></li></ol></li><li><a href="disciplines/intro.html"><strong aria-hidden="true">3.</strong> Disciplines</a></li><li><ol class="section"><li><a href="disciplines/list_disciplines.html"><strong aria-hidden="true">3.1.</strong> List disciplines</a></li></ol></li><li><a href="misc/contributing.html"><strong aria-hidden="true">4.</strong> Contributing</a></li></ol>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                
+                <div id="menu-bar" class="menu-bar">
+                    <div id="menu-bar-sticky-container">
+                        <div class="left-buttons">
+                            <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                                <i class="fa fa-bars"></i>
+                            </button>
+                            <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                                <i class="fa fa-paint-brush"></i>
+                            </button>
+                            <ul id="theme-list" class="theme-popup" aria-label="submenu">
+                                <li><button class="theme" id="light">Light <span class="default">(default)</span></button></li>
+                                <li><button class="theme" id="rust">Rust</button></li>
+                                <li><button class="theme" id="coal">Coal</button></li>
+                                <li><button class="theme" id="navy">Navy</button></li>
+                                <li><button class="theme" id="ayu">Ayu</button></li>
+                            </ul>
+                        </div>
+
+                        <h1 class="menu-title">Toornament Rust API</h1>
+
+                        <div class="right-buttons">
+                            <a href="print.html" title="Print this book" aria-label="Print this book">
+                                <i id="print-button" class="fa fa-print"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script type="text/javascript">
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <a class="header" href="tournaments/stages.html#get-tournament-stages" id="get-tournament-stages"><h1>Get tournament stages</h1></a>
+<p>To fetch stages of a tournament you can use <code>Toornament::tournament_stages</code> method:</p>
+<pre><pre class="playpen"><code class="language-rust no_run">extern crate toornament;
+use toornament::*;
+
+fn main() {
+    let toornament = Toornament::with_application(&quot;API_TOKEN&quot;,
+                                                  &quot;CLIENT_ID&quot;,
+                                                  &quot;CLIENT_SECRET&quot;).unwrap()
+                                .timeout(5);
+
+    // Get stages of a tournament with id = &quot;1&quot;
+    let stages = toornament.tournament_stages(TournamentId(&quot;1&quot;.to_owned()));
+}
+</code></pre></pre>
+<p>This will return stages as a result.</p>
+<p>Fetching stages via <code>iter-like</code> interface is simple as usual:</p>
+<pre><pre class="playpen"><code class="language-rust no_run">extern crate toornament;
+use toornament::*;
+
+fn main() {
+    let toornament = Toornament::with_application(&quot;API_TOKEN&quot;,
+                                                  &quot;CLIENT_ID&quot;,
+                                                  &quot;CLIENT_SECRET&quot;).unwrap()
+                                .timeout(5);
+
+    let stages = toornament.tournaments_iter()
+                           .with_id(TournamentId(&quot;1&quot;.to_owned()))
+                           .stages()
+                           .collect::&lt;Stages&gt;();
+}
+</code></pre></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                        
+                            <a rel="prev" href="tournaments/permissions/delete_permission.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                        
+
+                        
+                            <a rel="next" href="tournaments/videos.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                
+                    <a href="tournaments/permissions/delete_permission.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                
+
+                
+                    <a href="tournaments/videos.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                
+            </nav>
+
+        </div>
+
+
+        <!-- Local fallback for Font Awesome -->
+        <script>
+            if (getComputedStyle(document.querySelector(".fa")).fontFamily !== "FontAwesome") {
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.type = 'text/css';
+                link.href = '_FontAwesome/css/font-awesome.css';
+                document.head.insertBefore(link, document.head.firstChild)
+            }
+        </script>
+
+        
+
+        
+
+        
+
+        
+
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS script -->
+        
+
+    </body>
+</html>
