@@ -16,11 +16,12 @@ cache:
         
 before_script:
   - export PATH="$PATH:$HOME/.cargo/bin"
-  - which rustfmt || cargo install rustfmt-nightly
+  - rustup install nightly
+  - which rustfmt || cargo +nightly install --force rustfmt-nightly
 
 script:
-  - cargo fmt -- --write-mode=diff
-  - cargo build
+  - cargo +nightly fmt -- --write-mode diff
+  - cargo check
   - cargo test --verbose $FEATURES -- --nocapture
   # - cd external_markdown_tests
   # - cargo test --verbose $FEATURES -- --nocapture
