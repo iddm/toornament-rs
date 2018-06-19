@@ -5,8 +5,8 @@ authors = ["Victor Polevoy <maintainer@thefx.co>"]
 build = "build.rs"
 
 [build-dependencies]
-skeptic = "0.9"
+skeptic = "0.13"
 
 [dev-dependencies]
-skeptic = "0.9"
+skeptic = "0.13"
 toornament = { path = "../" }
