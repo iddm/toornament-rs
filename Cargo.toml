@@ -16,7 +16,7 @@ travis-ci = { repository = "vityafx/toornament-rs" }
 
 [dependencies]
 hyper = "0.11"
-reqwest = "0.8"
+reqwest = "0.9"
 log = "0.3"
 serde = "1"
 serde_derive = "1"
