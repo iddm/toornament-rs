@@ -82,22 +82,22 @@
 //! So, the finish states are usually a modifier of an iterator (like `matches()` of
 //! `TournamentIter`) or a `collect()` methods.
 
-mod tournaments;
-mod tournament_matches;
+mod discipline_matches;
+mod disciplines;
 mod games;
 mod participants;
 mod permissions;
 mod stages;
+mod tournament_matches;
+mod tournaments;
 mod videos;
-mod disciplines;
-mod discipline_matches;
 
-pub use self::tournaments::*;
-pub use self::tournament_matches::*;
+pub use self::discipline_matches::*;
+pub use self::disciplines::*;
 pub use self::games::*;
 pub use self::participants::*;
 pub use self::permissions::*;
 pub use self::stages::*;
+pub use self::tournament_matches::*;
+pub use self::tournaments::*;
 pub use self::videos::*;
-pub use self::disciplines::*;
-pub use self::discipline_matches::*;

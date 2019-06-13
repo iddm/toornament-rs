@@ -45,7 +45,7 @@ pub struct Videos(pub Vec<Video>);
 
 #[cfg(test)]
 mod tests {
-    use ::*;
+    use *;
 
     #[test]
     fn test_videos_parse() {

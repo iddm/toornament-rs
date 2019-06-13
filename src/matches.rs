@@ -1,9 +1,9 @@
 use chrono::{DateTime, FixedOffset};
 
 use disciplines::DisciplineId;
-use tournaments::TournamentId;
-use opponents::Opponents;
 use games::Games;
+use opponents::Opponents;
+use tournaments::TournamentId;
 
 /// Match unique identificator.
 #[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
@@ -205,8 +205,8 @@ mod tests {
 
     #[test]
     fn test_parse_match_results() {
-        use matches::{MatchResult, MatchStatus};
         use common::MatchResultSimple;
+        use matches::{MatchResult, MatchStatus};
         let string = r#"
         {
             "status": "pending",

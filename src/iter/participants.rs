@@ -1,4 +1,4 @@
-use ::*;
+use *;
 
 /// A remote participants iterator
 pub struct ParticipantsIter<'a> {
@@ -69,8 +69,10 @@ impl<'a> ParticipantsIter<'a> {
 impl<'a> ParticipantsIter<'a> {
     /// Collects the participants
     pub fn collect<T: From<Participants>>(self) -> Result<T> {
-        Ok(T::from(self.client
-            .tournament_participants(self.tournament_id, self.filter)?))
+        Ok(T::from(self.client.tournament_participants(
+            self.tournament_id,
+            self.filter,
+        )?))
     }
 }
 
@@ -90,7 +92,8 @@ pub struct ParticipantsEditor<'a> {
 impl<'a> ParticipantsEditor<'a> {
     /// Sends the edited participant
     pub fn update(mut self) -> Result<Participants> {
-        let original = self.client
+        let original = self
+            .client
             .tournament_participants(self.tournament_id.clone(), self.filter)?;
         let edited = (self.editor)(original);
         self.client
@@ -142,8 +145,10 @@ impl<'a> ParticipantIter<'a> {
 impl<'a> ParticipantIter<'a> {
     /// Collects the participant
     pub fn collect<T: From<Participant>>(self) -> Result<T> {
-        Ok(T::from(self.client
-            .tournament_participant(self.tournament_id, self.id)?))
+        Ok(T::from(
+            self.client
+                .tournament_participant(self.tournament_id, self.id)?,
+        ))
     }
 
     /// Delete the participant
@@ -194,7 +199,8 @@ pub struct ParticipantEditor<'a> {
 impl<'a> ParticipantEditor<'a> {
     /// Sends the edited participant
     pub fn update(mut self) -> Result<Participant> {
-        let original = self.client
+        let original = self
+            .client
             .tournament_participant(self.tournament_id.clone(), self.id.clone())?;
         let edited = (self.editor)(original);
         self.client

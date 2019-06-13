@@ -1,4 +1,4 @@
-use ::*;
+use *;
 
 /// A match games iterator
 pub struct GamesIter<'a> {

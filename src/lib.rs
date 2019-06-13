@@ -45,77 +45,82 @@ extern crate serde_derive;
 extern crate serde_json;
 
 use reqwest::header::{Authorization, Bearer, ContentType};
-use std::sync::Mutex;
 use std::io::Read;
+use std::sync::Mutex;
 
 #[macro_use]
 mod macroses;
-mod matches;
-mod error;
-mod tournaments;
+mod common;
 mod disciplines;
-mod games;
+mod endpoints;
+mod error;
 mod filters;
+mod games;
+pub mod info;
+pub mod iter;
+mod matches;
+mod opponents;
 mod participants;
 mod permissions;
 mod stages;
-mod videos;
-mod opponents;
 mod streams;
-mod endpoints;
-mod common;
-pub mod info;
-pub mod iter;
+mod tournaments;
+mod videos;
 
-use endpoints::Endpoint;
-pub use error::{Error, IterError, Result, ToornamentError, ToornamentErrorScope,
-                ToornamentErrorType, ToornamentErrors, ToornamentServiceError};
 pub use common::{Date, MatchResultSimple, TeamSize};
-pub use matches::{Match, MatchFormat, MatchId, MatchResult, MatchStatus, MatchType, Matches};
-pub use games::{Game, GameNumber, Games};
-pub use stages::{Stage, StageNumber, StageType, Stages};
-pub use videos::{Video, VideoCategory, Videos};
-pub use opponents::{Opponent, Opponents};
-pub use permissions::{Permission, PermissionAttribute, PermissionAttributes, PermissionId,
-                      Permissions};
-pub use participants::{CustomField, CustomFieldType, CustomFields, Participant, ParticipantId,
-                       ParticipantLogo, ParticipantType, Participants};
 pub use disciplines::{AdditionalFields, Discipline, DisciplineId, Disciplines};
-pub use filters::{CreateDateSortFilter, DateSortFilter, MatchFilter, TournamentParticipantsFilter,
-                  TournamentVideosFilter};
-pub use tournaments::{Tournament, TournamentId, TournamentStatus, Tournaments};
-pub use streams::{Stream, StreamId, Streams};
+use endpoints::Endpoint;
+pub use error::{
+    Error, IterError, Result, ToornamentError, ToornamentErrorScope, ToornamentErrorType,
+    ToornamentErrors, ToornamentServiceError,
+};
+pub use filters::{
+    CreateDateSortFilter, DateSortFilter, MatchFilter, TournamentParticipantsFilter,
+    TournamentVideosFilter,
+};
+pub use games::{Game, GameNumber, Games};
 pub use iter::*;
+pub use matches::{Match, MatchFormat, MatchId, MatchResult, MatchStatus, MatchType, Matches};
+pub use opponents::{Opponent, Opponents};
+pub use participants::{
+    CustomField, CustomFieldType, CustomFields, Participant, ParticipantId, ParticipantLogo,
+    ParticipantType, Participants,
+};
+pub use permissions::{
+    Permission, PermissionAttribute, PermissionAttributes, PermissionId, Permissions,
+};
+pub use stages::{Stage, StageNumber, StageType, Stages};
+pub use streams::{Stream, StreamId, Streams};
+pub use tournaments::{Tournament, TournamentId, TournamentStatus, Tournaments};
+pub use videos::{Video, VideoCategory, Videos};
 
 /// Macro only for internal use with the `Toornament` object (relies on it's fields)
 macro_rules! request {
-    ($toornament:ident, $method:ident, $address:expr) => {
-        {
-            let token = $toornament.fresh_token()?;
-            let mut builder = $toornament.client.$method($address);
-            builder.header(XApiKey($toornament.keys.0.clone()))
-                   .header(Authorization(Bearer {
-                       token: token.clone(),
-                   }));
-            retry(builder)
-        }
-    }
+    ($toornament:ident, $method:ident, $address:expr) => {{
+        let token = $toornament.fresh_token()?;
+        let mut builder = $toornament.client.$method($address);
+        builder
+            .header(XApiKey($toornament.keys.0.clone()))
+            .header(Authorization(Bearer {
+                token: token.clone(),
+            }));
+        retry(builder)
+    }};
 }
 
 /// Macro only for internal use with the `Toornament` object (relies on it's fields)
 macro_rules! request_body {
-    ($toornament:ident, $method:ident, $address:expr, $body:expr) => {
-        {
-            let token = $toornament.fresh_token()?;
-            let mut builder = $toornament.client.$method($address);
-            builder.body($body)
-                   .header(XApiKey($toornament.keys.0.clone()))
-                   .header(Authorization(Bearer {
-                       token: token.clone(),
-                   }));
-            retry(builder)
-        }
-    };
+    ($toornament:ident, $method:ident, $address:expr, $body:expr) => {{
+        let token = $toornament.fresh_token()?;
+        let mut builder = $toornament.client.$method($address);
+        builder
+            .body($body)
+            .header(XApiKey($toornament.keys.0.clone()))
+            .header(Authorization(Bearer {
+                token: token.clone(),
+            }));
+        retry(builder)
+    }};
 }
 
 mod custom_headers {
@@ -324,9 +329,9 @@ impl Toornament {
         }
         let response = request!(self, get, &address)?;
         if id_is_set {
-            Ok(Disciplines(vec![
-                serde_json::from_reader::<_, Discipline>(response)?,
-            ]))
+            Ok(Disciplines(vec![serde_json::from_reader::<_, Discipline>(
+                response,
+            )?]))
         } else {
             Ok(serde_json::from_reader(response)?)
         }
@@ -361,18 +366,20 @@ impl Toornament {
             address = Endpoint::TournamentByIdGet {
                 tournament_id: id,
                 with_streams: with_streams,
-            }.to_string();
+            }
+            .to_string();
         } else {
             debug!("Getting all tournaments");
             address = Endpoint::AllTournaments {
                 with_streams: with_streams,
-            }.to_string();
+            }
+            .to_string();
         }
         let response = request!(self, get, &address)?;
         if id_is_set {
-            Ok(Tournaments(vec![
-                serde_json::from_reader::<_, Tournament>(response)?,
-            ]))
+            Ok(Tournaments(vec![serde_json::from_reader::<_, Tournament>(
+                response,
+            )?]))
         } else {
             Ok(serde_json::from_reader(response)?)
         }
@@ -496,7 +503,8 @@ impl Toornament {
                     tournament_id: id,
                     match_id: match_id,
                     with_games: with_games,
-                }.to_string();
+                }
+                .to_string();
                 request!(self, get, &address)?
             }
             None => {
@@ -504,7 +512,8 @@ impl Toornament {
                 let address = Endpoint::MatchesByTournament {
                     tournament_id: id,
                     with_games: with_games,
-                }.to_string();
+                }
+                .to_string();
                 request!(self, get, &address)?
             }
         };
@@ -532,7 +541,8 @@ impl Toornament {
         let address = Endpoint::MatchesByDiscipline {
             discipline_id: id,
             filter: filter,
-        }.to_string();
+        }
+        .to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -572,7 +582,8 @@ impl Toornament {
         let address = Endpoint::MatchByIdUpdate {
             tournament_id: id,
             match_id: match_id,
-        }.to_string();
+        }
+        .to_string();
         let body = serde_json::to_string(&updated_match)?;
         let response = request_body!(self, patch, &address, body)?;
 
@@ -670,7 +681,8 @@ impl Toornament {
             tournament_id: id,
             match_id: match_id,
             with_stats: with_stats,
-        }.to_string();
+        }
+        .to_string();
         let response = request!(self, get, &address)?;
         Ok(serde_json::from_reader(response)?)
     }
@@ -707,7 +719,8 @@ impl Toornament {
             match_id: match_id,
             game_number: game_number,
             with_stats: with_stats,
-        }.to_string();
+        }
+        .to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -750,7 +763,8 @@ impl Toornament {
             tournament_id: id,
             match_id: match_id,
             game_number: game_number,
-        }.to_string();
+        }
+        .to_string();
         let body = serde_json::to_string(&game)?;
         let response = request_body!(self, patch, &address, body)?;
 
@@ -786,7 +800,8 @@ impl Toornament {
             tournament_id: id,
             match_id: match_id,
             game_number: game_number,
-        }.to_string();
+        }
+        .to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -831,7 +846,8 @@ impl Toornament {
             match_id: match_id,
             game_number: game_number,
             update_match: update_match,
-        }.to_string();
+        }
+        .to_string();
         let body = serde_json::to_string(&result)?;
         let response = request_body!(self, put, &address, body)?;
 
@@ -864,7 +880,8 @@ impl Toornament {
         let address = Endpoint::Participants {
             tournament_id: id,
             filter: filter,
-        }.to_string();
+        }
+        .to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)
@@ -1259,7 +1276,8 @@ impl Toornament {
         let address = Endpoint::Videos {
             tournament_id: id,
             filter: filter,
-        }.to_string();
+        }
+        .to_string();
         let response = request!(self, get, &address)?;
 
         Ok(serde_json::from_reader(response)?)

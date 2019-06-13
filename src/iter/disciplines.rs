@@ -1,4 +1,4 @@
-use ::*;
+use *;
 
 /// Disciplines iterator
 pub struct DisciplinesIter<'a> {
@@ -73,7 +73,8 @@ impl<'a> DisciplineIter<'a> {
 impl<'a> DisciplineIter<'a> {
     /// Fetch the discipline
     pub fn collect<T: From<Discipline>>(self) -> Result<T> {
-        match self.client
+        match self
+            .client
             .disciplines(Some(self.id.clone()))?
             .0
             .first()

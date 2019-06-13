@@ -1,7 +1,7 @@
+use common::Date;
 use participants::ParticipantId;
 use tournaments::TournamentId;
 use videos::VideoCategory;
-use common::Date;
 
 use std::fmt;
 

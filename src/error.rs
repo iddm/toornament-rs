@@ -1,9 +1,9 @@
-use std::io::Error as IoError;
-use std::error::Error as StdError;
-use std::fmt::Display;
+use chrono::format::ParseError;
 use reqwest::Error as ReqwestError;
 use serde_json::Error as JsonError;
-use chrono::format::ParseError;
+use std::error::Error as StdError;
+use std::fmt::Display;
+use std::io::Error as IoError;
 
 /// Toornament API `Result` alias type.
 pub type Result<T> = ::std::result::Result<T, Error>;

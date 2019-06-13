@@ -1,9 +1,9 @@
-use ::*;
 use iter::participants::ParticipantsIter;
 use iter::permissions::PermissionsIter;
-use iter::tournament_matches::TournamentMatchesIter;
 use iter::stages::StagesIter;
+use iter::tournament_matches::TournamentMatchesIter;
 use iter::videos::VideosIter;
+use *;
 
 #[derive(Debug, Copy, Clone)]
 enum TournamentsIterFetch {
@@ -176,7 +176,8 @@ impl<'a> TournamentIter<'a> {
 impl<'a> TournamentIter<'a> {
     /// Return the tournament
     pub fn collect<T: From<Tournament>>(self) -> Result<T> {
-        let tournaments = self.client
+        let tournaments = self
+            .client
             .tournaments(Some(self.id.clone()), self.with_streams)?;
         let tournament = match tournaments.0.first() {
             Some(t) => t.to_owned(),
@@ -208,7 +209,8 @@ pub struct TournamentEditor<'a> {
 impl<'a> TournamentEditor<'a> {
     /// Sends the edited tournament
     pub fn update(mut self) -> Result<Tournament> {
-        let tournaments = self.client
+        let tournaments = self
+            .client
             .tournaments(Some(self.id.clone()), self.with_streams)?;
         let original = match tournaments.0.first() {
             Some(t) => t.to_owned(),
@@ -220,7 +222,8 @@ impl<'a> TournamentEditor<'a> {
 
     /// Update and return iter
     pub fn update_iter(mut self) -> Result<TournamentIter<'a>> {
-        let tournaments = self.client
+        let tournaments = self
+            .client
             .tournaments(Some(self.id.clone()), self.with_streams)?;
         let original = match tournaments.0.first() {
             Some(t) => t.to_owned(),

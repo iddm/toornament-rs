@@ -1,4 +1,4 @@
-use ::*;
+use *;
 
 /// A discipline matches iterator
 pub struct DisciplineMatchesIter<'a> {
@@ -39,7 +39,9 @@ impl<'a> DisciplineMatchesIter<'a> {
 impl<'a> DisciplineMatchesIter<'a> {
     /// Fetch matches
     pub fn collect<T: From<Matches>>(self) -> Result<T> {
-        Ok(T::from(self.client
-            .matches_by_discipline(self.discipline_id, self.filter)?))
+        Ok(T::from(
+            self.client
+                .matches_by_discipline(self.discipline_id, self.filter)?,
+        ))
     }
 }

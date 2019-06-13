@@ -1,8 +1,8 @@
 extern crate chrono;
 extern crate toornament;
 
-use toornament::*;
 use chrono::offset::Utc;
+use toornament::*;
 
 fn workflow() -> Result<()> {
     let tournament_website = Some("https://toornament.com/".to_owned());
@@ -32,7 +32,8 @@ fn workflow() -> Result<()> {
     tournament = toornament.edit_tournament(tournament)?;
     println!("Created tournament: {:?}\n", tournament);
 
-    let wwe2k17_tournaments = toornament.tournaments(Some(tournament.id.clone().unwrap()), false)?;
+    let wwe2k17_tournaments =
+        toornament.tournaments(Some(tournament.id.clone().unwrap()), false)?;
     let wwe2k17_t = wwe2k17_tournaments.0.first().clone().unwrap();
     assert_eq!(wwe2k17_t.id, tournament.id);
 

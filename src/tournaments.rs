@@ -1,6 +1,6 @@
-use matches::{MatchFormat, MatchType};
 use common::Date;
 use disciplines::DisciplineId;
+use matches::{MatchFormat, MatchType};
 use participants::ParticipantType;
 use streams::Streams;
 
@@ -257,7 +257,7 @@ pub struct Tournaments(pub Vec<Tournament>);
 
 #[cfg(test)]
 mod tests {
-    use ::*;
+    use *;
 
     #[test]
     fn test_stream_parse() {

@@ -1,4 +1,4 @@
-use ::*;
+use *;
 
 const API_BASE: &'static str = "https://api.toornament.com";
 
@@ -328,8 +328,8 @@ fn tournament_videos(f: TournamentVideosFilter) -> String {
 
 #[cfg(test)]
 mod tests {
-    use MatchFilter;
     use endpoints::match_filter;
+    use MatchFilter;
 
     #[test]
     fn test_match_filter_to_get_string() {

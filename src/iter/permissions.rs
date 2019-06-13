@@ -1,4 +1,4 @@
-use ::*;
+use *;
 
 /// Tournament permissions iterator
 pub struct PermissionsIter<'a> {
@@ -42,7 +42,9 @@ impl<'a> PermissionsIter<'a> {
 impl<'a> PermissionsIter<'a> {
     /// Collects the permissions
     pub fn collect<T: From<Permissions>>(self) -> Result<T> {
-        Ok(T::from(self.client.tournament_permissions(self.tournament_id)?))
+        Ok(T::from(
+            self.client.tournament_permissions(self.tournament_id)?,
+        ))
     }
 }
 
@@ -109,8 +111,10 @@ impl<'a> PermissionIter<'a> {
 impl<'a> PermissionIter<'a> {
     /// Fetch the permission
     pub fn collect<T: From<Permission>>(self) -> Result<T> {
-        Ok(T::from(self.client
-            .tournament_permission(self.tournament_id, self.id)?))
+        Ok(T::from(
+            self.client
+                .tournament_permission(self.tournament_id, self.id)?,
+        ))
     }
 
     /// Delete this permission
@@ -140,7 +144,8 @@ impl<'a> PermissionCreator<'a> {
 
     /// Create and return iter
     pub fn update_iter(mut self) -> Result<PermissionIter<'a>> {
-        let created = self.client
+        let created = self
+            .client
             .create_tournament_permission(self.tournament_id.clone(), (self.creator)())?;
 
         match created.id {
@@ -182,7 +187,7 @@ impl<'a> PermissionEditor<'a> {
     pub fn update_iter(mut self) -> Result<PermissionIter<'a>> {
         let created = self.client.create_tournament_permission(self.tournament_id.clone(),
                                                                (self.editor)())?;
-        
+
         match created.id {
             Some(id) => Ok(PermissionIter::new(self.client, self.tournament_id, id)),
             None => Err(Error::Other("Permission does not have an id")),
@@ -251,7 +256,8 @@ pub struct PermissionAttributesEditor<'a> {
 impl<'a> PermissionAttributesEditor<'a> {
     /// Edits and the permission attributes
     pub fn update(mut self) -> Result<Permission> {
-        let original = self.client
+        let original = self
+            .client
             .tournament_permission(self.tournament_id.clone(), self.permission_id.clone())?
             .attributes;
         let edited = (self.editor)(original);
@@ -264,7 +270,8 @@ impl<'a> PermissionAttributesEditor<'a> {
 
     /// Edit and return iter
     pub fn update_iter(mut self) -> Result<PermissionAttributesIter<'a>> {
-        let original = self.client
+        let original = self
+            .client
             .tournament_permission(self.tournament_id.clone(), self.permission_id.clone())?
             .attributes;
         let edited = (self.editor)(original);

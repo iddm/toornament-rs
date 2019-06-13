@@ -1,5 +1,5 @@
-use ::*;
 use iter::games::GamesIter;
+use *;
 
 /// A tournament matches iterator
 pub struct TournamentMatchesIter<'a> {
@@ -166,7 +166,10 @@ impl<'a> TournamentMatchResultIter<'a> {
 impl<'a> TournamentMatchResultIter<'a> {
     /// Fetch the match result
     pub fn collect<T: From<MatchResult>>(self) -> Result<T> {
-        Ok(T::from(self.client.match_result(self.tournament_id, self.match_id)?))
+        Ok(T::from(
+            self.client
+                .match_result(self.tournament_id, self.match_id)?,
+        ))
     }
 }
 
@@ -186,7 +189,8 @@ pub struct TournamentMatchResultEditor<'a> {
 impl<'a> TournamentMatchResultEditor<'a> {
     /// Adds or edits the match result
     pub fn update(mut self) -> Result<MatchResult> {
-        let original = self.client
+        let original = self
+            .client
             .match_result(self.tournament_id.clone(), self.match_id.clone())?;
         self.client
             .set_match_result(self.tournament_id, self.match_id, (self.editor)(original))

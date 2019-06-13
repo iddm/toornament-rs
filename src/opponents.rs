@@ -1,5 +1,5 @@
-use participants::Participant;
 use common::MatchResultSimple;
+use participants::Participant;
 
 /// An opponent involved in a match.
 #[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]

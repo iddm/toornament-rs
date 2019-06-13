@@ -1,8 +1,8 @@
 extern crate skeptic;
 
 fn list_markdown_files(dir_path: &str) -> Vec<String> {
-    use std::fs::read_dir;
     use std::ascii::AsciiExt;
+    use std::fs::read_dir;
 
     let mut out = Vec::new();
 

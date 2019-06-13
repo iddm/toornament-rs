@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
-use std::fmt;
 use serde;
+use std::fmt;
 
 /// A common type for toornament dates.
 pub type Date = NaiveDate;

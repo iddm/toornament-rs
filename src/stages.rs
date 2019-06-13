@@ -40,7 +40,7 @@ pub struct Stages(pub Vec<Stage>);
 
 #[cfg(test)]
 mod tests {
-    use ::*;
+    use *;
 
     #[test]
     fn test_stages_parse() {
