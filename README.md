@@ -36,9 +36,8 @@ fn main() {
 }
 ```
 
-More examples are in the 
-[documentation](https://vityafx.github.io/toornament-rs/master/toornament/) and in the 
-[`examples/` subdirectory](https://github.com/vityafx/toornament-rs/blob/master/examples/)
+More examples are in the  
+[`examples/` subdirectory](./examples/)
 
 ## License
 
