@@ -9,10 +9,7 @@ pub struct DisciplinesIter<'a> {
 impl<'a> DisciplinesIter<'a> {
     /// Creates new disciplines iterator
     pub fn new(client: &'a Toornament) -> DisciplinesIter<'a> {
-        DisciplinesIter {
-            client: client,
-            all: true,
-        }
+        DisciplinesIter { client, all: true }
     }
 
     /// Fetch all disciplines
@@ -25,10 +22,10 @@ impl<'a> DisciplinesIter<'a> {
 /// Modifiers
 impl<'a> DisciplinesIter<'a> {
     /// Fetch a discipline with id
-    pub fn with_id(self, id: DisciplineId) -> DisciplineIter<'a> {
+    pub fn with_id(self, discipline_id: DisciplineId) -> DisciplineIter<'a> {
         DisciplineIter {
             client: self.client,
-            id: id,
+            discipline_id,
         }
     }
 }
@@ -37,9 +34,9 @@ impl<'a> DisciplinesIter<'a> {
 impl<'a> DisciplinesIter<'a> {
     /// Fetch the discipline
     pub fn collect<T: From<Disciplines>>(self) -> Result<T> {
-        match self.all {
-            _ => Ok(T::from(self.client.disciplines(None)?)),
-        }
+        // TODO check for possible mistake.
+        // check `if self.all` ?
+        Ok(T::from(self.client.disciplines(None)?))
     }
 }
 
@@ -48,15 +45,15 @@ pub struct DisciplineIter<'a> {
     client: &'a Toornament,
 
     /// Fetch a discipline with the following id
-    id: DisciplineId,
+    discipline_id: DisciplineId,
 }
 
 impl<'a> DisciplineIter<'a> {
     /// Creates new discipline iterator
-    pub fn new(client: &'a Toornament, id: DisciplineId) -> DisciplineIter<'a> {
+    pub fn new(client: &'a Toornament, discipline_id: DisciplineId) -> DisciplineIter<'a> {
         DisciplineIter {
-            client: client,
-            id: id,
+            client,
+            discipline_id,
         }
     }
 }
@@ -65,7 +62,7 @@ impl<'a> DisciplineIter<'a> {
 impl<'a> DisciplineIter<'a> {
     /// Fetch matches of a discipline
     pub fn matches(self) -> DisciplineMatchesIter<'a> {
-        DisciplineMatchesIter::new(self.client, self.id)
+        DisciplineMatchesIter::new(self.client, self.discipline_id)
     }
 }
 
@@ -75,13 +72,13 @@ impl<'a> DisciplineIter<'a> {
     pub fn collect<T: From<Discipline>>(self) -> Result<T> {
         match self
             .client
-            .disciplines(Some(self.id.clone()))?
+            .disciplines(Some(self.discipline_id.clone()))?
             .0
             .first()
             .take()
         {
             Some(d) => Ok(T::from(d.to_owned())),
-            None => Err(Error::Iter(IterError::NoSuchDiscipline(self.id))),
+            None => Err(Error::Iter(IterError::NoSuchDiscipline(self.discipline_id))),
         }
     }
 }

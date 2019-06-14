@@ -20,9 +20,9 @@ impl<'a> GamesIter<'a> {
         match_id: MatchId,
     ) -> GamesIter<'a> {
         GamesIter {
-            client: client,
-            tournament_id: tournament_id,
-            match_id: match_id,
+            client,
+            tournament_id,
+            match_id,
             with_stats: false,
         }
     }
@@ -46,7 +46,7 @@ impl<'a> GamesIter<'a> {
             tournament_id: self.tournament_id,
             match_id: self.match_id,
             with_stats: self.with_stats,
-            number: number,
+            number,
         }
     }
 }

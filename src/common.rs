@@ -65,7 +65,6 @@ pub struct TeamSize {
     pub max: i64,
 }
 
-/// A match result.
 enum_number!(MatchResultSimple {
     Win = 1,
     Draw = 2,

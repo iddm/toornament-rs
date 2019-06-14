@@ -11,8 +11,8 @@ impl<'a> PermissionsIter<'a> {
     /// Create new permissions iter
     pub fn new(client: &'a Toornament, tournament_id: TournamentId) -> PermissionsIter {
         PermissionsIter {
-            client: client,
-            tournament_id: tournament_id,
+            client,
+            tournament_id,
         }
     }
 }
@@ -20,11 +20,11 @@ impl<'a> PermissionsIter<'a> {
 /// Modifiers
 impl<'a> PermissionsIter<'a> {
     /// A permission with id
-    pub fn with_id(self, id: PermissionId) -> PermissionIter<'a> {
+    pub fn with_id(self, permission_id: PermissionId) -> PermissionIter<'a> {
         PermissionIter {
             client: self.client,
             tournament_id: self.tournament_id,
-            id: id,
+            permission_id,
         }
     }
 
@@ -55,19 +55,19 @@ pub struct PermissionIter<'a> {
     /// Fetch permissions of the following tournament id
     tournament_id: TournamentId,
     /// Fetch permission with id
-    id: PermissionId,
+    permission_id: PermissionId,
 }
 impl<'a> PermissionIter<'a> {
     /// Create new permission iter
     pub fn new(
         client: &'a Toornament,
         tournament_id: TournamentId,
-        id: PermissionId,
+        permission_id: PermissionId,
     ) -> PermissionIter {
         PermissionIter {
-            client: client,
-            tournament_id: tournament_id,
-            id: id,
+            client,
+            tournament_id,
+            permission_id,
         }
     }
 }
@@ -75,11 +75,11 @@ impl<'a> PermissionIter<'a> {
 /// Modifiers
 impl<'a> PermissionIter<'a> {
     /// Fetch a permission with the following id
-    pub fn with_id(self, id: PermissionId) -> PermissionIter<'a> {
+    pub fn with_id(self, permission_id: PermissionId) -> PermissionIter<'a> {
         PermissionIter {
             client: self.client,
             tournament_id: self.tournament_id,
-            id: id,
+            permission_id,
         }
     }
 
@@ -102,7 +102,7 @@ impl<'a> PermissionIter<'a> {
         PermissionAttributesIter {
             client: self.client,
             tournament_id: self.tournament_id,
-            permission_id: self.id,
+            permission_id: self.permission_id,
         }
     }
 }
@@ -111,16 +111,16 @@ impl<'a> PermissionIter<'a> {
 impl<'a> PermissionIter<'a> {
     /// Fetch the permission
     pub fn collect<T: From<Permission>>(self) -> Result<T> {
-        Ok(T::from(
-            self.client
-                .tournament_permission(self.tournament_id, self.id)?,
-        ))
+        Ok(T::from(self.client.tournament_permission(
+            self.tournament_id,
+            self.permission_id,
+        )?))
     }
 
     /// Delete this permission
     pub fn delete(self) -> Result<()> {
         self.client
-            .delete_tournament_permission(self.tournament_id, self.id)
+            .delete_tournament_permission(self.tournament_id, self.permission_id)
     }
 }
 
@@ -235,7 +235,7 @@ impl<'a> PermissionAttributesIter<'a> {
         PermissionIter {
             client: self.client,
             tournament_id: self.tournament_id,
-            id: self.permission_id,
+            permission_id: self.permission_id,
         }
     }
 }

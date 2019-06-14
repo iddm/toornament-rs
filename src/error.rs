@@ -64,7 +64,7 @@ pub enum IterError {
     /// A tournament with such id does not exist
     NoSuchTournament(::TournamentId),
     /// A tournament does not have an id set
-    NoTournamentId(::Tournament),
+    NoTournamentId(Box<::Tournament>),
     /// A match does not exist
     NoSuchMatch(::TournamentId, ::MatchId),
     /// A permission does not have an id set
@@ -81,7 +81,7 @@ impl Display for IterError {
                 s = format!("A tournament with id ({}) does not exist", id.0);
             }
             IterError::NoTournamentId(_) => {
-                s = format!("A tournament does not have an id set.");
+                s = "A tournament does not have an id set.".to_owned();
             }
             IterError::NoSuchMatch(ref t_id, ref m_id) => {
                 s = format!(
@@ -90,7 +90,7 @@ impl Display for IterError {
                 );
             }
             IterError::NoPermissionId => {
-                s = format!("A permission does not have an id set.");
+                s = "A permission does not have an id set.".to_owned();
             }
             IterError::NoSuchDiscipline(ref id) => {
                 s = format!("A permission with id ({}) does not exist.", id.0);
@@ -132,10 +132,10 @@ impl From<::reqwest::Response> for Error {
             retry_after: u64,
         }
 
-        let status = response.status().clone();
+        let status = response.status();
         let mut body = String::new();
         let _ = response.read_to_string(&mut body);
-        if status == ::reqwest::StatusCode::TooManyRequests {
+        if status == ::reqwest::StatusCode::TOO_MANY_REQUESTS {
             if let Ok(value) = ::serde_json::from_str::<TooManyRequests>(&body) {
                 return Error::RateLimited(value.retry_after);
             }

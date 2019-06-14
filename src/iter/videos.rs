@@ -13,8 +13,8 @@ impl<'a> VideosIter<'a> {
     /// Create new videos iter
     pub fn new(client: &'a Toornament, tournament_id: TournamentId) -> VideosIter {
         VideosIter {
-            client: client,
-            tournament_id: tournament_id,
+            client,
+            tournament_id,
             filter: TournamentVideosFilter::default(),
         }
     }

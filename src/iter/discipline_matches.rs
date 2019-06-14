@@ -11,10 +11,10 @@ pub struct DisciplineMatchesIter<'a> {
 }
 impl<'a> DisciplineMatchesIter<'a> {
     /// Creates new match iterator
-    pub fn new(client: &'a Toornament, id: DisciplineId) -> DisciplineMatchesIter {
+    pub fn new(client: &'a Toornament, discipline_id: DisciplineId) -> DisciplineMatchesIter {
         DisciplineMatchesIter {
-            client: client,
-            discipline_id: id,
+            client,
+            discipline_id,
             filter: MatchFilter::default(),
         }
     }

@@ -27,7 +27,7 @@ impl<'a> TournamentsIter<'a> {
     /// Creates new tournaments iterator
     pub fn new(client: &'a Toornament) -> TournamentsIter {
         TournamentsIter {
-            client: client,
+            client,
             with_streams: false,
             name: None,
             fetch: TournamentsIterFetch::All,
@@ -109,8 +109,8 @@ impl<'a> TournamentIter<'a> {
     /// Creates new tournament iter for a tournament with id
     pub fn new(client: &'a Toornament, id: TournamentId) -> TournamentIter {
         TournamentIter {
-            client: client,
-            id: id,
+            client,
+            id,
             with_streams: false,
         }
     }
@@ -260,7 +260,7 @@ impl<'a> TournamentCreator<'a> {
 
         match created.id {
             Some(id) => Ok(TournamentIter::new(self.client, id)),
-            None => Err(Error::Iter(IterError::NoTournamentId(created))),
+            None => Err(Error::Iter(IterError::NoTournamentId(Box::new(created)))),
         }
     }
 }

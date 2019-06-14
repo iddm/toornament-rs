@@ -46,7 +46,7 @@ impl Permission {
         Permission {
             id: None,
             email: email.into(),
-            attributes: attributes,
+            attributes,
         }
     }
 }

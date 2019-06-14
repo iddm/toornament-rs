@@ -12,10 +12,10 @@ pub struct TournamentMatchesIter<'a> {
 }
 impl<'a> TournamentMatchesIter<'a> {
     /// Creates new match iterator
-    pub fn new(client: &'a Toornament, id: TournamentId) -> TournamentMatchesIter {
+    pub fn new(client: &'a Toornament, tournament_id: TournamentId) -> TournamentMatchesIter {
         TournamentMatchesIter {
-            client: client,
-            tournament_id: id,
+            client,
+            tournament_id,
             with_games: false,
         }
     }
@@ -39,11 +39,11 @@ impl<'a> TournamentMatchesIter<'a> {
 /// Modifiers
 impl<'a> TournamentMatchesIter<'a> {
     /// Get a match with id
-    pub fn with_id(self, id: MatchId) -> TournamentMatchIter<'a> {
+    pub fn with_id(self, match_id: MatchId) -> TournamentMatchIter<'a> {
         TournamentMatchIter {
             client: self.client,
             tournament_id: self.tournament_id,
-            match_id: id,
+            match_id,
             with_games: self.with_games,
         }
     }
@@ -81,10 +81,10 @@ impl<'a> TournamentMatchIter<'a> {
         with_games: bool,
     ) -> TournamentMatchIter<'a> {
         TournamentMatchIter {
-            client: client,
-            tournament_id: tournament_id,
-            match_id: match_id,
-            with_games: with_games,
+            client,
+            tournament_id,
+            match_id,
+            with_games,
         }
     }
 }

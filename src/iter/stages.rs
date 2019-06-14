@@ -11,8 +11,8 @@ impl<'a> StagesIter<'a> {
     /// Create new stages iter
     pub fn new(client: &'a Toornament, tournament_id: TournamentId) -> StagesIter {
         StagesIter {
-            client: client,
-            tournament_id: tournament_id,
+            client,
+            tournament_id,
         }
     }
 }

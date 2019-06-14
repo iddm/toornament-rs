@@ -50,7 +50,7 @@ impl Discipline {
         copyrights: S,
     ) -> Discipline {
         Discipline {
-            id: id,
+            id,
             name: name.into(),
             short_name: short_name.into(),
             full_name: full_name.into(),
@@ -76,7 +76,7 @@ impl Discipline {
     }
 
     /// Converts discipline into an iter
-    pub fn into_iter<'a>(self, client: &'a ::Toornament) -> ::DisciplineIter<'a> {
+    pub fn into_iter(self, client: &::Toornament) -> ::DisciplineIter<'_> {
         ::DisciplineIter::new(client, self.id)
     }
 }

@@ -134,19 +134,19 @@ impl Tournament {
         size: i64,
     ) -> Tournament {
         Tournament {
-            id: id,
-            discipline: discipline,
+            id,
+            discipline,
             name: name.into(),
             full_name: None,
-            status: status,
+            status,
             date_start: None,
             date_end: None,
             time_zone: None,
-            online: online,
-            public: public,
+            online,
+            public,
             location: None,
             country: None,
-            size: size,
+            size,
             participant_type: None,
             match_type: None,
             organization: None,
@@ -173,7 +173,7 @@ impl Tournament {
     ) -> Tournament {
         Tournament {
             id: None,
-            discipline: discipline,
+            discipline,
             name: name.into(),
             full_name: None,
             status: TournamentStatus::Setup,
@@ -184,7 +184,7 @@ impl Tournament {
             public: false,
             location: None,
             country: None,
-            size: size,
+            size,
             participant_type: Some(participant_type),
             match_type: None,
             organization: None,
@@ -241,7 +241,7 @@ impl Tournament {
     }
 
     /// Converts tournament into an iter
-    pub fn into_iter<'a>(self, client: &'a ::Toornament) -> Option<::TournamentIter<'a>> {
+    pub fn into_iter(self, client: &::Toornament) -> Option<::TournamentIter<'_>> {
         match self.id {
             Some(id) => {
                 Some(::TournamentIter::new(client, id).with_streams(self.streams.is_some()))

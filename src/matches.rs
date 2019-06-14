@@ -127,7 +127,7 @@ impl Match {
     }
 
     /// Converts into iter for the tournament match
-    pub fn into_iter_tournament<'a>(self, client: &'a ::Toornament) -> ::TournamentMatchIter<'a> {
+    pub fn into_iter_tournament(self, client: &::Toornament) -> ::TournamentMatchIter<'_> {
         ::TournamentMatchIter::new(client, self.tournament_id, self.id, self.games.is_some())
     }
 
@@ -137,7 +137,7 @@ impl Match {
     }
 
     /// Converts into iter for the discipline matches
-    pub fn into_iter_discipline<'a>(self, client: &'a ::Toornament) -> ::DisciplineMatchesIter<'a> {
+    pub fn into_iter_discipline(self, client: &::Toornament) -> ::DisciplineMatchesIter<'_> {
         ::DisciplineMatchesIter::new(client, self.discipline_id)
     }
 }

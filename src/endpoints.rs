@@ -1,6 +1,6 @@
 use *;
 
-const API_BASE: &'static str = "https://api.toornament.com";
+const API_BASE: &str = "https://api.toornament.com";
 
 #[derive(Debug, Clone)]
 pub enum Endpoint {
@@ -82,8 +82,8 @@ impl ::std::fmt::Display for Endpoint {
     fn fmt(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
         let address;
         match *self {
-            Endpoint::OauthToken => address = format!("/oauth/v2/token"),
-            Endpoint::AllDisciplines => address = format!("/v1/disciplines"),
+            Endpoint::OauthToken => address = "/oauth/v2/token".to_owned(),
+            Endpoint::AllDisciplines => address = "/v1/disciplines".to_owned(),
             Endpoint::DisciplineById(ref id) => address = format!("/v1/disciplines/{}", id.0),
             Endpoint::AllTournaments { with_streams } => {
                 address = format!(
@@ -91,7 +91,7 @@ impl ::std::fmt::Display for Endpoint {
                     if with_streams { "1" } else { "0" }
                 )
             }
-            Endpoint::MyTournaments => address = format!("/v1/me/tournaments"),
+            Endpoint::MyTournaments => address = "/v1/me/tournaments".to_owned(),
             Endpoint::TournamentByIdGet {
                 ref tournament_id,
                 with_streams,
@@ -105,7 +105,7 @@ impl ::std::fmt::Display for Endpoint {
             Endpoint::TournamentByIdUpdate(ref tournament_id) => {
                 address = format!("/v1/tournaments/{}", tournament_id.0)
             }
-            Endpoint::TournamentCreate => address = format!("/v1/tournaments"),
+            Endpoint::TournamentCreate => address = "/v1/tournaments".to_owned(),
             Endpoint::MatchesByTournament {
                 ref tournament_id,
                 with_games,
@@ -260,44 +260,36 @@ impl ::std::fmt::Display for Endpoint {
 
 fn match_filter(f: MatchFilter) -> String {
     let mut out = Vec::new();
-    match f.featured {
-        Some(f) => out.push(format!("featured={}", if f { 1 } else { 0 })),
-        None => {}
+    if let Some(f) = f.featured {
+        out.push(format!("featured={}", if f { 1 } else { 0 }));
     }
-    match f.has_result {
-        Some(r) => out.push(format!("has_result={}", if r { 1 } else { 0 })),
-        None => {}
+    if let Some(r) = f.has_result {
+        out.push(format!("has_result={}", if r { 1 } else { 0 }));
     }
-    match f.sort {
-        Some(s) => out.push(format!("sort={}", s.to_string())),
-        None => {}
+    if let Some(s) = f.sort {
+        out.push(format!("sort={}", s.to_string()));
     }
-    match f.participant_id {
-        Some(i) => out.push(format!("participant_id={}", i.0)),
-        None => {}
+    if let Some(i) = f.participant_id {
+        out.push(format!("participant_id={}", i.0));
     }
-    match f.tournament_ids {
-        Some(ref i) => out.push(format!(
+    if let Some(ref i) = f.tournament_ids {
+        out.push(format!(
             "tournament_ids={}",
             i.iter()
                 .map(|i| i.0.as_str())
                 .collect::<Vec<&str>>()
                 .join(",")
-        )),
-        None => {}
+        ));
     }
     out.push(format!("with_games={}", if f.with_games { 1 } else { 0 }));
-    match f.before_date {
-        Some(d) => out.push(format!("before_date={}", d)),
-        None => {}
+    if let Some(d) = f.before_date {
+        out.push(format!("before_date={}", d));
     }
-    match f.after_date {
-        Some(d) => out.push(format!("after_date={}", d)),
-        None => {}
+    if let Some(d) = f.after_date {
+        out.push(format!("after_date={}", d));
     }
-    match f.page {
-        Some(p) => out.push(format!("page={}", p)),
-        None => {}
+    if let Some(p) = f.page {
+        out.push(format!("page={}", p));
     }
     out.join("&")
 }
@@ -314,14 +306,12 @@ fn tournament_participants(f: TournamentParticipantsFilter) -> String {
 
 fn tournament_videos(f: TournamentVideosFilter) -> String {
     let mut out = Vec::new();
-    match f.category {
-        Some(c) => out.push(format!("category={}", c.to_string())),
-        None => {}
+    if let Some(c) = f.category {
+        out.push(format!("category={}", c.to_string()));
     }
     out.push(format!("sort={}", f.sort.to_string()));
-    match f.page {
-        Some(p) => out.push(format!("page={}", p)),
-        None => {}
+    if let Some(p) = f.page {
+        out.push(format!("page={}", p));
     }
     out.join("&")
 }

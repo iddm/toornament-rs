@@ -11,10 +11,10 @@ pub struct ParticipantsIter<'a> {
 }
 impl<'a> ParticipantsIter<'a> {
     /// Create new participants iter
-    pub fn new(client: &'a Toornament, id: TournamentId) -> ParticipantsIter {
+    pub fn new(client: &'a Toornament, tournament_id: TournamentId) -> ParticipantsIter {
         ParticipantsIter {
-            client: client,
-            tournament_id: id,
+            client,
+            tournament_id,
             filter: TournamentParticipantsFilter::default(),
         }
     }
@@ -118,9 +118,9 @@ impl<'a> ParticipantIter<'a> {
         id: ParticipantId,
     ) -> ParticipantIter {
         ParticipantIter {
-            client: client,
-            tournament_id: tournament_id,
-            id: id,
+            client,
+            tournament_id,
+            id,
         }
     }
 }
