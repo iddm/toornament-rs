@@ -85,7 +85,7 @@ pub struct ParticipantsEditor<'a> {
     /// Participants with filter
     filter: TournamentParticipantsFilter,
     /// Participant editor
-    editor: Box<FnMut(Participants) -> Participants>,
+    editor: Box<dyn FnMut(Participants) -> Participants>,
 }
 
 /// Terminators
@@ -171,7 +171,7 @@ pub struct ParticipantCreator<'a> {
     /// Tournament id in which the participant is in
     tournament_id: TournamentId,
     /// Participant editor
-    creator: Box<FnMut() -> Participant>,
+    creator: Box<dyn FnMut() -> Participant>,
 }
 
 /// Terminators
@@ -192,7 +192,7 @@ pub struct ParticipantEditor<'a> {
     /// Participant's id
     id: ParticipantId,
     /// Participant editor
-    editor: Box<FnMut(Participant) -> Participant>,
+    editor: Box<dyn FnMut(Participant) -> Participant>,
 }
 
 /// Terminators

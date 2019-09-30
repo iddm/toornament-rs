@@ -202,7 +202,7 @@ pub struct TournamentEditor<'a> {
     /// With streams
     with_streams: bool,
     /// Tournament editor
-    editor: Box<FnMut(Tournament) -> Tournament>,
+    editor: Box<dyn FnMut(Tournament) -> Tournament>,
 }
 
 /// Terminators
@@ -244,7 +244,7 @@ pub struct TournamentCreator<'a> {
     client: &'a Toornament,
 
     /// Tournament creator
-    creator: Box<FnMut() -> Tournament>,
+    creator: Box<dyn FnMut() -> Tournament>,
 }
 
 /// Terminators

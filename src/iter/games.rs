@@ -128,7 +128,7 @@ pub struct GameEditor<'a> {
     /// Fetch game with a number
     number: GameNumber,
     /// Match result editor
-    editor: Box<FnMut(Game) -> Game>,
+    editor: Box<dyn FnMut(Game) -> Game>,
 }
 
 /// Terminators
@@ -202,7 +202,7 @@ pub struct GameResultEditor<'a> {
     /// Fetch game with a number
     number: GameNumber,
     /// Editor
-    editor: Box<FnMut(MatchResult) -> MatchResult>,
+    editor: Box<dyn FnMut(MatchResult) -> MatchResult>,
 }
 
 /// Terminators

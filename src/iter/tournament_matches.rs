@@ -182,7 +182,7 @@ pub struct TournamentMatchResultEditor<'a> {
     /// Fetch match with id
     match_id: MatchId,
     /// Match result editor
-    editor: Box<FnMut(MatchResult) -> MatchResult>,
+    editor: Box<dyn FnMut(MatchResult) -> MatchResult>,
 }
 
 /// Terminators
@@ -208,7 +208,7 @@ pub struct TournamentMatchEditor<'a> {
     /// Fetch games with the match
     with_games: bool,
     /// Editor
-    editor: Box<FnMut(Match) -> Match>,
+    editor: Box<dyn FnMut(Match) -> Match>,
 }
 
 /// Terminators

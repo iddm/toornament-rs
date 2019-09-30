@@ -131,7 +131,7 @@ pub struct PermissionCreator<'a> {
     /// A tournament to which the permission will belong to
     tournament_id: TournamentId,
     /// Permission creator
-    creator: Box<FnMut() -> Permission>,
+    creator: Box<dyn FnMut() -> Permission>,
 }
 
 /// Terminators
@@ -249,7 +249,7 @@ pub struct PermissionAttributesEditor<'a> {
     /// A permission to edit
     permission_id: PermissionId,
     /// Permission attributes editor
-    editor: Box<FnMut(PermissionAttributes) -> PermissionAttributes>,
+    editor: Box<dyn FnMut(PermissionAttributes) -> PermissionAttributes>,
 }
 
 /// Terminators
