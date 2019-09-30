@@ -332,5 +332,4 @@ mod tests {
             "featured=1&has_result=1&sort=date_asc&with_games=0&page=2"
         );
     }
-
 }
