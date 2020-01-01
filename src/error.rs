@@ -114,7 +114,7 @@ pub enum Error {
     /// A error common toornament service error
     Toornament(::reqwest::StatusCode, ToornamentServiceError),
     /// A generic non-success response from the REST API
-    Status(::reqwest::StatusCode, String),
+    Status(::reqwest::StatusCode),
     /// A rate limit error, with how many milliseconds to wait before retrying
     RateLimited(u64),
     /// An iter error
@@ -123,28 +123,25 @@ pub enum Error {
     Rest(&'static str),
 }
 
-impl From<::reqwest::Response> for Error {
-    fn from(mut response: ::reqwest::Response) -> Error {
-        use std::io::Read;
-
+impl From<::reqwest::blocking::Response> for Error {
+    fn from(response: ::reqwest::blocking::Response) -> Error {
         #[derive(Deserialize)]
         struct TooManyRequests {
             retry_after: u64,
         }
 
         let status = response.status();
-        let mut body = String::new();
-        let _ = response.read_to_string(&mut body);
         if status == ::reqwest::StatusCode::TOO_MANY_REQUESTS {
-            if let Ok(value) = ::serde_json::from_str::<TooManyRequests>(&body) {
+            if let Ok(value) = response.json::<TooManyRequests>() {
                 return Error::RateLimited(value.retry_after);
             }
         } else if !status.is_success() {
-            if let Ok(e) = ::serde_json::from_str::<ToornamentServiceError>(&body) {
+            if let Ok(e) = response.json::<ToornamentServiceError>() {
                 return Error::Toornament(status, e);
             }
         }
-        Error::Status(status, body)
+
+        Error::Status(status)
     }
 }
 
@@ -179,27 +176,12 @@ impl Display for Error {
             Error::Json(ref inner) => inner.fmt(f),
             Error::Io(ref inner) => inner.fmt(f),
             Error::Date(ref inner) => inner.fmt(f),
-            _ => f.write_str(self.description()),
+            _ => f.write_str(&self.to_string()),
         }
     }
 }
 
 impl StdError for Error {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Reqwest(ref inner) => inner.description(),
-            Error::Json(ref inner) => inner.description(),
-            Error::Io(ref inner) => inner.description(),
-            Error::Date(ref inner) => inner.description(),
-            Error::Iter(_) => "An iter error",
-            Error::Rest(msg) => msg,
-            Error::Toornament(status, _) | Error::Status(status, _) => status
-                .canonical_reason()
-                .unwrap_or("Unknown bad HTTP status"),
-            Error::RateLimited(_) => "Rate limited",
-        }
-    }
-
     fn cause(&self) -> Option<&dyn StdError> {
         match *self {
             Error::Reqwest(ref inner) => Some(inner),

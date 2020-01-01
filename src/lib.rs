@@ -141,7 +141,7 @@ fn parse_token<R: Read>(json_str: R) -> Result<AccessToken> {
 }
 
 fn authenticate(
-    client: &reqwest::Client,
+    client: &reqwest::blocking::Client,
     client_id: &str,
     client_secret: &str,
 ) -> Result<AccessToken> {
@@ -163,7 +163,7 @@ fn authenticate(
 /// This struct covers all the `toornament` API.
 #[derive(Debug)]
 pub struct Toornament {
-    client: reqwest::Client,
+    client: reqwest::blocking::Client,
     keys: (String, String, String),
     oauth_token: Mutex<AccessToken>,
 }
@@ -216,7 +216,7 @@ impl Toornament {
         client_id: S,
         client_secret: S,
     ) -> Result<Toornament> {
-        let client = reqwest::Client::new();
+        let client = reqwest::blocking::Client::new();
         let keys = (api_token.into(), client_id.into(), client_secret.into());
         let token = authenticate(&client, &keys.1, &keys.2)?;
 
@@ -253,7 +253,7 @@ impl Toornament {
     pub fn timeout(mut self, seconds: u64) -> Result<Toornament> {
         use std::time::Duration;
 
-        self.client = reqwest::ClientBuilder::new()
+        self.client = reqwest::blocking::ClientBuilder::new()
             .timeout(Duration::from_secs(seconds))
             .build()?;
         Ok(self)
