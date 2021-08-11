@@ -173,8 +173,6 @@ pub struct MatchResult {
 
 #[cfg(test)]
 mod tests {
-    use serde_json;
-
     #[test]
     fn test_match_parse() {
         use crate::matches::{Match, MatchStatus, MatchType};
@@ -238,10 +236,10 @@ mod tests {
         let r: MatchResult = serde_json::from_str(string).unwrap();
 
         assert_eq!(r.status, MatchStatus::Pending);
-        let op = r.opponents.0.iter().next().unwrap();
+        let op = r.opponents.0.get(0).unwrap();
         assert_eq!(op.number, 1);
         assert_eq!(op.result, Some(MatchResultSimple::Win));
         assert_eq!(op.score, None);
-        assert_eq!(op.forfeit, false);
+        assert!(!op.forfeit);
     }
 }

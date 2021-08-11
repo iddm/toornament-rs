@@ -186,8 +186,8 @@ mod tests {
                 "id Software",
             ),
         ];
-        let mut iter = ds.0.iter().zip(correct_disciplines.iter());
-        while let Some(pair) = iter.next() {
+        let iter = ds.0.iter().zip(correct_disciplines.iter());
+        for pair in iter {
             assert_eq!(pair.0.id, pair.1.id);
             assert_eq!(pair.0.name, pair.1.name);
             assert_eq!(pair.0.short_name, pair.1.short_name);

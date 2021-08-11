@@ -155,7 +155,6 @@ pub struct Participants(pub Vec<Participant>);
 #[cfg(test)]
 mod tests {
     use super::{CustomFieldType, Participants};
-    use serde_json;
 
     #[test]
     fn test_participant_parse() {
@@ -214,7 +213,7 @@ mod tests {
 
         let ps: Participants = serde_json::from_str(s).unwrap();
         assert_eq!(ps.0.len(), 1);
-        let p = ps.0.iter().next().unwrap().clone();
+        let p = ps.0.get(0).unwrap().clone();
 
         assert_eq!(p.id.unwrap().0, "378426939508809728");
         assert_eq!(p.name, "Evil Geniuses");
@@ -238,14 +237,14 @@ mod tests {
         assert_eq!(p.country, Some("US".to_owned()));
         let lineup = p.lineup.unwrap().0;
         assert_eq!(lineup.len(), 1);
-        let lp = lineup.iter().next().unwrap();
+        let lp = lineup.get(0).unwrap();
         assert!(lp.id.is_none());
         assert_eq!(lp.name, "Storm Spirit");
         assert_eq!(lp.country, Some("US".to_owned()));
         {
             let lpcfs = lp.custom_fields.clone().unwrap().0;
             assert_eq!(lpcfs.len(), 1);
-            let lpcf = lpcfs.iter().next().unwrap();
+            let lpcf = lpcfs.get(0).unwrap();
             assert_eq!(lpcf.field_type, CustomFieldType::SteamId);
             assert_eq!(lpcf.label, "Steam ID");
             assert_eq!(lpcf.value, "STEAM_0:1:1234567");
@@ -254,7 +253,7 @@ mod tests {
         {
             let lpcfsp = lp.custom_fields_private.clone().unwrap().0;
             assert_eq!(lpcfsp.len(), 1);
-            let lpcfp = lpcfsp.iter().next().unwrap();
+            let lpcfp = lpcfsp.get(0).unwrap();
             assert_eq!(lpcfp.field_type, CustomFieldType::SteamId);
             assert_eq!(lpcfp.label, "Steam ID");
             assert_eq!(lpcfp.value, "STEAM_0:1:1234567");
@@ -264,15 +263,15 @@ mod tests {
         {
             let pcfs = p.custom_fields.clone().unwrap().0;
             assert_eq!(pcfs.len(), 1);
-            let pcf = pcfs.iter().next().unwrap();
+            let pcf = pcfs.get(0).unwrap();
             assert_eq!(pcf.field_type, CustomFieldType::SteamId);
             assert_eq!(pcf.label, "Steam ID");
             assert_eq!(pcf.value, "STEAM_0:1:1234567");
         }
         {
-            let pcfsp = p.custom_fields_private.clone().unwrap().0;
+            let pcfsp = p.custom_fields_private.unwrap().0;
             assert_eq!(pcfsp.len(), 1);
-            let pcfp = pcfsp.iter().next().unwrap();
+            let pcfp = pcfsp.get(0).unwrap();
             assert_eq!(pcfp.field_type, CustomFieldType::SteamId);
             assert_eq!(pcfp.label, "Steam ID");
             assert_eq!(pcfp.value, "STEAM_0:1:1234567");
