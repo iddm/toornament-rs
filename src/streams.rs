@@ -16,7 +16,7 @@ pub struct Stream {
     /// Example: "DreamhackCS"
     pub name: String,
     /// Url of the stream.
-    /// Example: "http://www.twitch.tv/dreamhackcs"
+    /// Example: `"http://www.twitch.tv/dreamhackcs"`
     pub url: String,
     /// Language code of the stream content. This value is represented as an ISO 639-1 code.
     /// Example: "en"

@@ -18,7 +18,7 @@ pub enum TournamentStatus {
     Setup,
     /// Means it has at least one match result
     Running,
-    /// ??? No description in the source https://developer.toornament.com/doc/tournaments
+    /// TODO No description in the source <https://developer.toornament.com/doc/tournaments>
     Pending,
     /// Indicates all matches have a result
     Completed,
@@ -87,7 +87,7 @@ pub struct Tournament {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub organization: Option<String>,
     /// URL of the website
-    /// Example: "http://www.toornament.com"
+    /// Example: `"http://www.toornament.com"`
     #[serde(skip_serializing_if = "Option::is_none")]
     pub website: Option<String>,
     /// User-defined description of the tournament (maximum 1,500 characters).

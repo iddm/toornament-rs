@@ -1,15 +1,14 @@
-//! Client library for the [Toornament](https://www.toornament.com) web API.
+//! Client library for the [Toornament](<https://www.toornament.com>) web API.
 //!
 //! Log in to Toornament with `Toornament::with_application`.
 //! Call API methods to interact with the service directly or user an iterator-like interface to
 //! work with it in more rust-idiomatic way.
 //!
-//! For Toornament API documentation [look here]
-//! (https://developer.toornament.com/overview/get-started).
+//! For Toornament API documentation [look here](<https://developer.toornament.com/overview/get-started>).
 //!
 //! For examples, see the `examples` directory in the source tree.
 //!
-//! For more readings, look at the [`toornament-rs book`](https://vityafx.github.io/toornament-rs).
+//! For more readings, look at the [`toornament-rs book`](<https://vityafx.github.io/toornament-rs>).
 //!
 //! # Usage
 //!
@@ -190,8 +189,8 @@ impl Toornament {
 
     /// Creates new `Toornament` object with client credentials
     /// which is your user API_Token, application's client id and secret.
-    /// You may obtain application's credentials [here]
-    /// (https://developer.toornament.com/applications/) (You must be logged in to open the page).
+    /// You may obtain application's credentials [here](<https://developer.toornament.com/applications/>)
+    /// (You must be logged in to open the page).
     /// This method connects to the toornament service and if there is a error it returns the `Error`
     /// object and on success it returns `Toornament` object.
     ///
@@ -262,10 +261,8 @@ impl Toornament {
         iter::DisciplinesIter::new(self)
     }
 
-    /// [Returns either a collection of disciplines]
-    /// (https://developer.toornament.com/doc/disciplines#get:disciplines) if id is None or
-    /// [a disciplines with the detail of his features]
-    /// (https://developer.toornament.com/doc/disciplines#get:disciplines:id)
+    /// [Returns either a collection of disciplines](<https://developer.toornament.com/doc/disciplines#get:disciplines>) if id is None or
+    /// [a disciplines with the detail of his features](<https://developer.toornament.com/doc/disciplines#get:disciplines:id>)
     ///
     /// # Example
     ///
@@ -303,10 +300,8 @@ impl Toornament {
     }
 
     /// [Returns a collection of public tournaments filtered and sorted by the given query
-    /// parameters. A maximum of 20 tournaments will be returned. Only public tournaments are
-    /// visible.](https://developer.toornament.com/doc/tournaments#get:tournaments) if id is None or
-    /// [a detailed information about one tournament. The tournament must be public.]
-    /// (https://developer.toornament.com/doc/tournaments#get:tournaments:id)
+    /// parameters. A maximum of 20 tournaments will be returned. Only public tournaments are visible.](<https://developer.toornament.com/doc/tournaments#get:tournaments>) if id is `None` or
+    /// [a detailed information about one tournament. The tournament must be public.](<https://developer.toornament.com/doc/tournaments#get:tournaments:id>)
     ///
     /// # Example
     ///
@@ -351,10 +346,8 @@ impl Toornament {
         }
     }
 
-    /// [Updates some of the editable information on a tournament.]
-    /// (https://developer.toornament.com/doc/tournaments#patch:tournaments:id) if `tournament.id`
-    /// is set otherwise [creates a tournament]
-    /// (https://developer.toornament.com/doc/tournaments#post:tournaments).
+    /// [Updates some of the editable information on a tournament.](<https://developer.toornament.com/doc/tournaments#patch:tournaments:id>) if `tournament.id`
+    /// is set otherwise [creates a tournament](<https://developer.toornament.com/doc/tournaments#post:tournaments>).
     ///
     /// # Example
     ///
@@ -368,7 +361,7 @@ impl Toornament {
     /// assert_eq!(tournaments.0.len(), 1);
     /// let mut tournament = tournaments.0.first().unwrap().clone();
     /// assert_eq!(tournament.id, Some(TournamentId("1".to_owned())));
-    /// tournament = tournament.website(Some("https://toornament.com".to_owned()));
+    /// tournament = tournament.website(Some("<https://toornament.com>".to_owned()));
     /// // Editing tournament by calling the appropriate method
     /// let tournament = t.edit_tournament(tournament.clone()).unwrap();
     /// assert_eq!(tournament.website,
@@ -393,8 +386,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Deletes a tournament, its participants and all its matches]
-    /// (https://developer.toornament.com/doc/tournaments#delete:tournaments:id).
+    /// [Deletes a tournament, its participants and all its matches](<https://developer.toornament.com/doc/tournaments#delete:tournaments:id>).
     ///
     /// # Example
     ///
@@ -415,8 +407,7 @@ impl Toornament {
 
     /// [Returns the private and public tournaments on which the authenticated user has access.
     /// The result is filtered, sorted and paginated by the given query parameters. A maximum of
-    /// 50 tournaments is returned (per page).]
-    /// (https://developer.toornament.com/doc/tournaments#get:metournaments)
+    /// 50 tournaments is returned (per page).](<https://developer.toornament.com/doc/tournaments#get:metournaments>)
     ///
     /// # Example
     ///
@@ -437,8 +428,7 @@ impl Toornament {
 
     /// [Returns a collection of matches from one tournament. The collection may be filtered and
     /// sorted by optional query parameters. The tournament must be public to have access to its
-    /// matches, meaning the tournament organizer has published it.]
-    /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
+    /// matches, meaning the tournament organizer has published it.](<https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches>)
     ///
     /// # Example
     ///
@@ -489,8 +479,7 @@ impl Toornament {
 
     /// [Retrieve a collection of matches from a specific discipline, filtered and sorted by the
     /// given query parameters. It might be a list of matches from different tournaments, but only
-    /// from public tournaments. The matches are returned by 20.]
-    /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches)
+    /// from public tournaments. The matches are returned by 20.](<https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches>)
     ///
     /// # Example
     ///
@@ -519,7 +508,7 @@ impl Toornament {
     }
 
     /// [If you need to make changes on your match data, you are able to do so by patching one or
-    /// several fields of your match.](https://developer.toornament.com/doc/matches#patch:tournaments:tournament_id:matches:id)
+    /// several fields of your match.](<https://developer.toornament.com/doc/matches#patch:tournaments:tournament_id:matches:id>)
     ///
     /// # Example
     ///
@@ -561,8 +550,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Returns detailed result about one match.]
-    /// (https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches:id:result)
+    /// [Returns detailed result about one match.](<https://developer.toornament.com/doc/matches#get:tournaments:tournament_id:matches:id:result>)
     ///
     /// # Example
     ///
@@ -587,8 +575,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Update or create detailed result about one match.]
-    /// (https://developer.toornament.com/doc/matches#put:tournaments:tournament_id:matches:id:result)
+    /// [Update or create detailed result about one match.](<https://developer.toornament.com/doc/matches#put:tournaments:tournament_id:matches:id:result>)
     ///
     /// # Example
     ///
@@ -625,8 +612,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Returns a collection of games from one match.]
-    /// (https://developer.toornament.com/doc/games#get:tournaments:tournament_id:matches:match_id:games)
+    /// [Returns a collection of games from one match.](<https://developer.toornament.com/doc/games#get:tournaments:tournament_id:matches:match_id:games>)
     ///
     /// # Example
     ///
@@ -661,8 +647,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Returns detailed information about one game.]
-    /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number)
+    /// [Returns detailed information about one game.](<https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number>)
     ///
     /// # Example
     ///
@@ -702,8 +687,7 @@ impl Toornament {
     }
 
     /// [If you need to make changes on your game data, you are able to do so by patching one
-    /// or several fields of your game.]
-    /// (https://developer.toornament.com/doc/games?#patch:tournaments:tournament_id:matches:match_id:games:number)
+    /// or several fields of your game.](<https://developer.toornament.com/doc/games?#patch:tournaments:tournament_id:matches:match_id:games:number>)
     ///
     /// # Example
     ///
@@ -747,8 +731,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Returns detailed result about one specific game.]
-    /// (https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number:result)
+    /// [Returns detailed result about one specific game.](<https://developer.toornament.com/doc/games?#get:tournaments:tournament_id:matches:match_id:games:number:result>)
     ///
     /// # Example
     ///
@@ -784,8 +767,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Updates or creates detailed result about one game.]
-    /// (https://developer.toornament.com/doc/games?#put:tournaments:tournament_id:matches:match_id:games:number:result)
+    /// [Updates or creates detailed result about one game.](<https://developer.toornament.com/doc/games?#put:tournaments:tournament_id:matches:match_id:games:number:result>)
     ///
     /// # Example
     ///
@@ -834,8 +816,7 @@ impl Toornament {
 
     /// [Returns a collection of participants from one tournament. The tournament must be public
     /// to have access to its participants, meaning the tournament organizer has published it. The
-    /// participants are returned by 256.]
-    /// (https://developer.toornament.com/doc/participant#get:tournaments:tournament_id:participants)
+    /// participants are returned by 256.](<https://developer.toornament.com/doc/participant#get:tournaments:tournament_id:participants>)
     ///
     /// # Example
     ///
@@ -868,8 +849,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Create a participant in a tournament.]
-    /// (https://developer.toornament.com/doc/participants?#post:tournaments:tournament_id:participants)
+    /// [Create a participant in a tournament.](<https://developer.toornament.com/doc/participants?#post:tournaments:tournament_id:participants>)
     ///
     /// # Example
     ///
@@ -899,8 +879,7 @@ impl Toornament {
     }
 
     /// [Create a list of participants in a tournament. If any participant already exists he will
-    /// be erased.]
-    /// (https://developer.toornament.com/doc/participants?_locale=en#put:tournaments:tournament_id:participants)
+    /// be erased.](<https://developer.toornament.com/doc/participants?_locale=en#put:tournaments:tournament_id:participants>)
     ///
     /// # Example
     ///
@@ -932,8 +911,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Returns detailed information about one participant.]
-    /// (https://developer.toornament.com/doc/participants?_locale=en#get:tournaments:tournament_id:participants:id)
+    /// [Returns detailed information about one participant.](<https://developer.toornament.com/doc/participants?_locale=en#get:tournaments:tournament_id:participants:id>)
     ///
     /// # Example
     ///
@@ -963,8 +941,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Update some of the editable information on a participant.]
-    /// (https://developer.toornament.com/doc/participants?_locale=en#patch:tournaments:tournament_id:participants:id)
+    /// [Update some of the editable information on a participant.](<https://developer.toornament.com/doc/participants?_locale=en#patch:tournaments:tournament_id:participants:id>)
     ///
     /// # Example
     ///
@@ -1004,8 +981,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Deletes one participant.]
-    /// (https://developer.toornament.com/doc/participants?_locale=en#delete:tournaments:tournament_id:participants:id)
+    /// [Deletes one participant.](<https://developer.toornament.com/doc/participants?_locale=en#delete:tournaments:tournament_id:participants:id>)
     ///
     /// # Example
     ///
@@ -1037,8 +1013,7 @@ impl Toornament {
         }
     }
 
-    /// [Returns a collection of permission from one tournament.]
-    /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions)
+    /// [Returns a collection of permission from one tournament.](<https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions>)
     ///
     /// # Example
     ///
@@ -1058,8 +1033,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Create a permission for a user on a tournament.]
-    /// (https://developer.toornament.com/doc/permissions?_locale=en#post:tournaments:tournament_id:permissions)
+    /// [Create a permission for a user on a tournament.](<https://developer.toornament.com/doc/permissions?_locale=en#post:tournaments:tournament_id:permissions>)
     ///
     /// # Example
     ///
@@ -1095,8 +1069,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Retrieves a permission of a tournament.]
-    /// (https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions:permission_id)
+    /// [Retrieves a permission of a tournament.](<https://developer.toornament.com/doc/permissions?_locale=en#get:tournaments:tournament_id:permissions:permission_id>)
     ///
     /// # Example
     ///
@@ -1127,8 +1100,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Update rights of a permission.]
-    /// (https://developer.toornament.com/doc/permissions?_locale=en#patch:tournaments:tournament_id:permissions:permission_id)
+    /// [Update rights of a permission.](<https://developer.toornament.com/doc/permissions?_locale=en#patch:tournaments:tournament_id:permissions:permission_id>)
     ///
     /// # Example
     ///
@@ -1177,9 +1149,7 @@ impl Toornament {
         Ok(serde_json::from_reader(response)?)
     }
 
-    /// [Delete a user permission of a tournament.]
-    /// (https://developer.toornament.com/doc/permissions?_locale=en#delete:tournaments:tournament_id:permissions:permission_id)
-    ///
+    /// [Delete a user permission of a tournament.](<https://developer.toornament.com/doc/permissions?_locale=en#delete:tournaments:tournament_id:permissions:permission_id>)
     /// # Example
     ///
     /// ```rust,no_run
@@ -1213,8 +1183,7 @@ impl Toornament {
     }
 
     /// [Returns a collection of stages from one tournament. The tournament must be public to have
-    /// access to its stages, meaning the tournament organizer must publish it.]
-    /// (https://developer.toornament.com/doc/stages?_locale=en#get:tournaments:tournament_id:stages)
+    /// access to its stages, meaning the tournament organizer must publish it.](<https://developer.toornament.com/doc/stages?_locale=en#get:tournaments:tournament_id:stages>)
     ///
     /// # Example
     ///
@@ -1237,8 +1206,7 @@ impl Toornament {
 
     /// [Returns a collection of videos from one tournament. The collection may be filtered and
     /// sorted by optional query parameters. The tournament must be public to have access to its
-    /// videos, meaning the tournament organizer has published it. The videos are returned by 20.]
-    /// (https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos)
+    /// videos, meaning the tournament organizer has published it. The videos are returned by 20.](<https://developer.toornament.com/doc/videos?_locale=en#get:tournaments:tournament_id:videos>)
     ///
     /// # Example
     ///
