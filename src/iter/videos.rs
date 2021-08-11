@@ -1,4 +1,4 @@
-use *;
+use crate::*;
 
 /// Tournament videos iterator
 pub struct VideosIter<'a> {

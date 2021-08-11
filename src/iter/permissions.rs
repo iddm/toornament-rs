@@ -1,4 +1,4 @@
-use *;
+use crate::*;
 
 /// Tournament permissions iterator
 pub struct PermissionsIter<'a> {

@@ -1,12 +1,14 @@
-use matches::MatchStatus;
-use opponents::Opponents;
+use crate::matches::MatchStatus;
+use crate::opponents::Opponents;
 
 /// A game number.
-#[derive(Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Copy, Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct GameNumber(pub i64);
 
 /// A game description.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Game {
     /// Game's number.
     pub number: GameNumber,
@@ -17,5 +19,5 @@ pub struct Game {
 }
 
 /// Array of games
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Games(pub Vec<Game>);

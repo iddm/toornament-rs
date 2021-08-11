@@ -1,6 +1,6 @@
-use *;
+use crate::*;
 
-const API_BASE: &str = "https://api.toornament.com";
+const API_BASE: &str = "https://api.toornament.com/organizer/v2";
 
 #[derive(Debug, Clone)]
 pub enum Endpoint {
@@ -318,8 +318,8 @@ fn tournament_videos(f: TournamentVideosFilter) -> String {
 
 #[cfg(test)]
 mod tests {
-    use endpoints::match_filter;
-    use MatchFilter;
+    use crate::endpoints::match_filter;
+    use crate::filters::MatchFilter;
 
     #[test]
     fn test_match_filter_to_get_string() {

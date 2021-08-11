@@ -1,4 +1,4 @@
-use *;
+use crate::*;
 
 /// A remote participants iterator
 pub struct ParticipantsIter<'a> {

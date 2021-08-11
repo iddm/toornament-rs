@@ -33,14 +33,7 @@
 //! refresh it's access token once it is expired, so you may just create it once and use
 //! everywhere.
 #![warn(missing_docs)]
-extern crate chrono;
-#[macro_use]
-extern crate log;
-extern crate reqwest;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
+#![deny(warnings)]
 
 use std::io::Read;
 use std::sync::Mutex;
@@ -125,7 +118,7 @@ struct AccessToken {
 }
 
 fn parse_token<R: Read>(json_str: R) -> Result<AccessToken> {
-    #[derive(Debug, Clone, Deserialize)]
+    #[derive(Debug, Clone, serde::Deserialize)]
     struct OauthAccessToken {
         access_token: String,
         expires_in: u64,
@@ -232,7 +225,7 @@ impl Toornament {
         let mut g = match self.oauth_token.lock() {
             Ok(g) => g,
             Err(e) => {
-                error!("Unable to refresh token: {:?}", e);
+                log::error!("Unable to refresh token: {:?}", e);
                 return false;
             }
         };
@@ -243,7 +236,7 @@ impl Toornament {
                 true
             }
             Err(e) => {
-                error!("Unable to refresh token: {:?}", e);
+                log::error!("Unable to refresh token: {:?}", e);
                 false
             }
         }
@@ -293,10 +286,10 @@ impl Toornament {
         let address;
         let id_is_set = id.is_some();
         if let Some(id) = id {
-            debug!("Getting disciplines with id: {:?}", id);
+            log::debug!("Getting disciplines with id: {:?}", id);
             address = Endpoint::DisciplineById(id).to_string();
         } else {
-            debug!("Getting all disciplines");
+            log::debug!("Getting all disciplines");
             address = Endpoint::AllDisciplines.to_string();
         }
         let response = request!(self, get, &address)?;
@@ -338,14 +331,14 @@ impl Toornament {
         let address;
         let id_is_set = tournament_id.is_some();
         if let Some(tournament_id) = tournament_id {
-            debug!("Getting tournament with id: {:?}", tournament_id);
+            log::debug!("Getting tournament with id: {:?}", tournament_id);
             address = Endpoint::TournamentByIdGet {
                 tournament_id,
                 with_streams,
             }
             .to_string();
         } else {
-            debug!("Getting all tournaments");
+            log::debug!("Getting all tournaments");
             address = Endpoint::AllTournaments { with_streams }.to_string();
         }
         let response = request!(self, get, &address)?;
@@ -391,10 +384,10 @@ impl Toornament {
         }
         let body = serde_json::to_string(&tournament)?;
         let response = if id_is_set {
-            debug!("Editing tournament: {:#?}", tournament);
+            log::debug!("Editing tournament: {:#?}", tournament);
             request_body!(self, patch, &address, body)?
         } else {
-            debug!("Creating tournament: {:#?}", tournament);
+            log::debug!("Creating tournament: {:#?}", tournament);
             request_body!(self, post, &address, body)?
         };
         Ok(serde_json::from_reader(response)?)
@@ -414,7 +407,7 @@ impl Toornament {
     /// assert!(t.delete_tournament(TournamentId("1".to_owned())).is_ok());
     /// ```
     pub fn delete_tournament(&self, id: TournamentId) -> Result<()> {
-        debug!("Deleting tournament by id: {:?}", id);
+        log::debug!("Deleting tournament by id: {:?}", id);
         let address = Endpoint::TournamentByIdUpdate(id).to_string();
         let _ = request!(self, delete, &address)?;
         Ok(())
@@ -436,7 +429,7 @@ impl Toornament {
     /// let tournaments = t.my_tournaments().unwrap();
     /// ```
     pub fn my_tournaments(&self) -> Result<Tournaments> {
-        debug!("Getting all tournaments");
+        log::debug!("Getting all tournaments");
         let address = Endpoint::MyTournaments.to_string();
         let response = request!(self, get, &address)?;
         Ok(serde_json::from_reader(response)?)
@@ -467,9 +460,10 @@ impl Toornament {
     ) -> Result<Matches> {
         let response = match match_id {
             Some(match_id) => {
-                debug!(
+                log::debug!(
                     "Getting matches by tournament id and match id: {:?} / {:?}",
-                    tournament_id, match_id
+                    tournament_id,
+                    match_id
                 );
                 let address = Endpoint::MatchByIdGet {
                     tournament_id,
@@ -480,7 +474,7 @@ impl Toornament {
                 request!(self, get, &address)?
             }
             None => {
-                debug!("Getting matches by tournament id: {:?}", tournament_id);
+                log::debug!("Getting matches by tournament id: {:?}", tournament_id);
                 let address = Endpoint::MatchesByTournament {
                     tournament_id,
                     with_games,
@@ -513,7 +507,7 @@ impl Toornament {
         discipline_id: DisciplineId,
         filter: MatchFilter,
     ) -> Result<Matches> {
-        debug!("Getting matches by discipline id: {:?}", discipline_id);
+        log::debug!("Getting matches by discipline id: {:?}", discipline_id);
         let address = Endpoint::MatchesByDiscipline {
             discipline_id,
             filter,
@@ -551,9 +545,10 @@ impl Toornament {
         match_id: MatchId,
         updated_match: Match,
     ) -> Result<Match> {
-        debug!(
+        log::debug!(
             "Updating a match by tournament id and match id: {:?} / {:?}",
-            tournament_id, match_id
+            tournament_id,
+            match_id
         );
         let address = Endpoint::MatchByIdUpdate {
             tournament_id,
@@ -581,9 +576,10 @@ impl Toornament {
     ///                             MatchId("2".to_owned())).unwrap();
     /// ```
     pub fn match_result(&self, id: TournamentId, match_id: MatchId) -> Result<MatchResult> {
-        debug!(
+        log::debug!(
             "Getting match result by tournament id and match id: {:?} / {:?}",
-            id, match_id
+            id,
+            match_id
         );
         let address = Endpoint::MatchResult(id, match_id).to_string();
         let response = request!(self, get, &address)?;
@@ -617,9 +613,10 @@ impl Toornament {
         match_id: MatchId,
         result: MatchResult,
     ) -> Result<MatchResult> {
-        debug!(
+        log::debug!(
             "Setting match result by tournament id and match id: {:?} / {:?}",
-            id, match_id
+            id,
+            match_id
         );
         let address = Endpoint::MatchResult(id, match_id).to_string();
         let body = serde_json::to_string(&result)?;
@@ -649,9 +646,10 @@ impl Toornament {
         match_id: MatchId,
         with_stats: bool,
     ) -> Result<Games> {
-        debug!(
+        log::debug!(
             "Getting match games by tournament id and match id: {:?} / {:?}",
-            tournament_id, match_id
+            tournament_id,
+            match_id
         );
         let address = Endpoint::MatchGames {
             tournament_id,
@@ -686,9 +684,10 @@ impl Toornament {
         game_number: GameNumber,
         with_stats: bool,
     ) -> Result<Game> {
-        debug!(
+        log::debug!(
             "Getting match game in details by tournament id and match id: {:?} / {:?}",
-            tournament_id, match_id
+            tournament_id,
+            match_id
         );
         let address = Endpoint::MatchGameByNumberGet {
             tournament_id,
@@ -731,9 +730,10 @@ impl Toornament {
         game_number: GameNumber,
         game: Game,
     ) -> Result<Game> {
-        debug!(
+        log::debug!(
             "Updating match game by tournament id and match id: {:?} / {:?}",
-            tournament_id, match_id
+            tournament_id,
+            match_id
         );
         let address = Endpoint::MatchGameByNumberUpdate {
             tournament_id,
@@ -768,9 +768,10 @@ impl Toornament {
         match_id: MatchId,
         game_number: GameNumber,
     ) -> Result<MatchResult> {
-        debug!(
+        log::debug!(
             "Getting match game result by tournament id and match id: {:?} / {:?}",
-            tournament_id, match_id
+            tournament_id,
+            match_id
         );
         let address = Endpoint::MatchGameResultGet {
             tournament_id,
@@ -813,9 +814,10 @@ impl Toornament {
         result: MatchResult,
         update_match: bool,
     ) -> Result<MatchResult> {
-        debug!(
+        log::debug!(
             "Setting match game result by tournament id and match id: {:?} / {:?}",
-            tournament_id, match_id
+            tournament_id,
+            match_id
         );
         let address = Endpoint::MatchGameResultUpdate {
             tournament_id,
@@ -852,7 +854,7 @@ impl Toornament {
         tournament_id: TournamentId,
         filter: TournamentParticipantsFilter,
     ) -> Result<Participants> {
-        debug!(
+        log::debug!(
             "Getting tournament participants by tournament id: {:?}",
             tournament_id
         );
@@ -888,7 +890,7 @@ impl Toornament {
         id: TournamentId,
         participant: Participant,
     ) -> Result<Participant> {
-        debug!("Creating a participant for tournament with id: {:?}", id);
+        log::debug!("Creating a participant for tournament with id: {:?}", id);
         let address = Endpoint::ParticipantCreate(id).to_string();
         let body = serde_json::to_string(&participant)?;
         let response = request_body!(self, post, &address, body)?;
@@ -919,7 +921,7 @@ impl Toornament {
         id: TournamentId,
         participants: Participants,
     ) -> Result<Participants> {
-        debug!(
+        log::debug!(
             "Creating a list of participants for tournament with id: {:?}",
             id
         );
@@ -950,9 +952,10 @@ impl Toornament {
         id: TournamentId,
         participant_id: ParticipantId,
     ) -> Result<Participant> {
-        debug!(
+        log::debug!(
             "Getting tournament participant by tournament id and participant id: {:?} / {:?}",
-            id, participant_id
+            id,
+            participant_id
         );
         let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let response = request!(self, get, &address)?;
@@ -989,9 +992,10 @@ impl Toornament {
         participant_id: ParticipantId,
         participant: Participant,
     ) -> Result<Participant> {
-        debug!(
+        log::debug!(
             "Updating a participant for tournament with id and participant id: {:?} / {:?}",
-            id, participant_id
+            id,
+            participant_id
         );
         let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let body = serde_json::to_string(&participant)?;
@@ -1019,9 +1023,10 @@ impl Toornament {
         id: TournamentId,
         participant_id: ParticipantId,
     ) -> Result<()> {
-        debug!(
+        log::debug!(
             "Deleting a participant for tournament with id and participant id: {:?} / {:?}",
-            id, participant_id
+            id,
+            participant_id
         );
         let address = Endpoint::ParticipantById(id, participant_id).to_string();
         let response = request!(self, delete, &address)?;
@@ -1046,7 +1051,7 @@ impl Toornament {
     /// let permissions = t.tournament_permissions(TournamentId("1".to_owned())).unwrap();
     /// ```
     pub fn tournament_permissions(&self, id: TournamentId) -> Result<Permissions> {
-        debug!("Getting tournament permissions by tournament id: {:?}", id);
+        log::debug!("Getting tournament permissions by tournament id: {:?}", id);
         let address = Endpoint::Permissions(id).to_string();
         let response = request!(self, get, &address)?;
 
@@ -1082,7 +1087,7 @@ impl Toornament {
         id: TournamentId,
         permission: Permission,
     ) -> Result<Permission> {
-        debug!("Creating tournament permissions by tournament id: {:?}", id);
+        log::debug!("Creating tournament permissions by tournament id: {:?}", id);
         let address = Endpoint::Permissions(id).to_string();
         let body = serde_json::to_string(&permission)?;
         let response = request_body!(self, post, &address, body)?;
@@ -1111,9 +1116,10 @@ impl Toornament {
         id: TournamentId,
         permission_id: PermissionId,
     ) -> Result<Permission> {
-        debug!(
+        log::debug!(
             "Getting tournament permission by tournament id and permission id: {:?} / {:?}",
-            id, permission_id
+            id,
+            permission_id
         );
         let address = Endpoint::PermissionById(id, permission_id).to_string();
         let response = request!(self, get, &address)?;
@@ -1153,14 +1159,15 @@ impl Toornament {
         permission_id: PermissionId,
         attributes: PermissionAttributes,
     ) -> Result<Permission> {
-        #[derive(Serialize)]
+        #[derive(serde::Serialize)]
         struct WrappedAttributes {
             attributes: PermissionAttributes,
         }
-        debug!(
+        log::debug!(
             "Updating tournament permission attributes by tournament id \
              and permission id: {:?} / {:?}",
-            id, permission_id
+            id,
+            permission_id
         );
         let address = Endpoint::PermissionById(id, permission_id).to_string();
         let wrapped_attributes = WrappedAttributes { attributes };
@@ -1191,9 +1198,10 @@ impl Toornament {
         id: TournamentId,
         permission_id: PermissionId,
     ) -> Result<()> {
-        debug!(
+        log::debug!(
             "Deleting a permission for tournament with id and permission id: {:?} / {:?}",
-            id, permission_id
+            id,
+            permission_id
         );
         let address = Endpoint::PermissionById(id, permission_id).to_string();
         let response = request!(self, delete, &address)?;
@@ -1220,7 +1228,7 @@ impl Toornament {
     /// let stages = t.tournament_stages(TournamentId("1".to_owned())).unwrap();
     /// ```
     pub fn tournament_stages(&self, id: TournamentId) -> Result<Stages> {
-        debug!("Getting tournament stages by tournament id: {:?}", id);
+        log::debug!("Getting tournament stages by tournament id: {:?}", id);
         let address = Endpoint::Stages(id).to_string();
         let response = request!(self, get, &address)?;
 
@@ -1249,7 +1257,7 @@ impl Toornament {
         tournament_id: TournamentId,
         filter: TournamentVideosFilter,
     ) -> Result<Videos> {
-        debug!(
+        log::debug!(
             "Getting tournament videos by tournament id: {:?}",
             tournament_id
         );
@@ -1270,6 +1278,6 @@ mod tests {
 
     #[test]
     fn test_sync_and_send() {
-        assert_sync_and_send::<::Toornament>();
+        assert_sync_and_send::<crate::Toornament>();
     }
 }

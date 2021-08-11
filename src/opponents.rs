@@ -1,8 +1,10 @@
-use common::MatchResultSimple;
-use participants::Participant;
+use crate::common::MatchResultSimple;
+use crate::participants::Participant;
 
 /// An opponent involved in a match.
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct Opponent {
     /// Number of the opponent
     pub number: i64,
@@ -24,5 +26,7 @@ pub struct Opponent {
 }
 
 /// List of the opponents involved in this match.
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct Opponents(pub Vec<Opponent>);

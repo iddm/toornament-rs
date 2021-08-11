@@ -1,4 +1,4 @@
-use *;
+use crate::*;
 
 /// Disciplines iterator
 pub struct DisciplinesIter<'a> {

@@ -1,4 +1,4 @@
-use *;
+use crate::*;
 
 /// A match games iterator
 pub struct GamesIter<'a> {

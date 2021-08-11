@@ -9,7 +9,7 @@ use std::io::Error as IoError;
 pub type Result<T> = ::std::result::Result<T, Error>;
 
 /// A toornament service error type
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ToornamentErrorType {
     /// Duplicate email error type
@@ -19,7 +19,7 @@ pub enum ToornamentErrorType {
 }
 
 /// A toornament service error scope
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ToornamentErrorScope {
     /// The error scope is the query
@@ -29,7 +29,7 @@ pub enum ToornamentErrorScope {
 }
 
 /// A list of toornament service errors
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct ToornamentError {
     /// Error message.
     pub message: String,
@@ -48,11 +48,11 @@ pub struct ToornamentError {
 }
 
 /// A list of toornament service errors
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct ToornamentErrors(pub Vec<ToornamentError>);
 
 /// Toornament service error
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct ToornamentServiceError {
     /// A list of toornament service errors
     pub errors: ToornamentErrors,
@@ -62,15 +62,15 @@ pub struct ToornamentServiceError {
 #[derive(Debug, Clone)]
 pub enum IterError {
     /// A tournament with such id does not exist
-    NoSuchTournament(::TournamentId),
+    NoSuchTournament(crate::TournamentId),
     /// A tournament does not have an id set
-    NoTournamentId(Box<::Tournament>),
+    NoTournamentId(Box<crate::Tournament>),
     /// A match does not exist
-    NoSuchMatch(::TournamentId, ::MatchId),
+    NoSuchMatch(crate::TournamentId, crate::MatchId),
     /// A permission does not have an id set
     NoPermissionId,
     /// A discipline with such id does not exist
-    NoSuchDiscipline(::DisciplineId),
+    NoSuchDiscipline(crate::DisciplineId),
 }
 
 impl Display for IterError {
@@ -125,7 +125,7 @@ pub enum Error {
 
 impl From<::reqwest::blocking::Response> for Error {
     fn from(response: ::reqwest::blocking::Response) -> Error {
-        #[derive(Deserialize)]
+        #[derive(serde::Deserialize)]
         struct TooManyRequests {
             retry_after: u64,
         }
@@ -176,7 +176,7 @@ impl Display for Error {
             Error::Json(ref inner) => inner.fmt(f),
             Error::Io(ref inner) => inner.fmt(f),
             Error::Date(ref inner) => inner.fmt(f),
-            _ => f.write_str(&self.to_string()),
+            _ => f.write_str(&format!("{:?}", self)),
         }
     }
 }

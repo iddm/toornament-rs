@@ -1,5 +1,5 @@
+use crate::*;
 use iter::games::GamesIter;
-use *;
 
 /// A tournament matches iterator
 pub struct TournamentMatchesIter<'a> {

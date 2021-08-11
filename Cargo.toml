@@ -1,6 +1,7 @@
 [package]
 name = "toornament"
-version = "2.1.0"
+version = "2.2.0"
+edition = "2018"
 authors = ["Victor Polevoy <maintainer@vpolevoy.com>"]
 description = "Library for Toornament.com the eSports platform"
 repository = "https://github.com/vityafx/toornament-rs"
@@ -10,18 +11,14 @@ license = "MIT"
 keywords = ["game", "toornament", "tournament", "api", "esport"]
 categories = ["api-bindings"]
 
-[badges]
-travis-ci = { repository = "vityafx/toornament-rs" }
-
 [dependencies]
 log = "0.4"
-serde = "1"
-serde_derive = "1"
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 chrono = { version = "0.4", features = ["serde"] }
 
 [dependencies.reqwest]
-version = "0.10"
+version = "0.11"
 features = ["json", "blocking"]
 
 [workspace]

@@ -1,9 +1,9 @@
-use matches::MatchId;
+use crate::matches::MatchId;
 
 use std::fmt;
 
 /// Tournament video category
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum VideoCategory {
     /// Replay video
@@ -24,7 +24,7 @@ impl fmt::Display for VideoCategory {
 }
 
 /// A tournament video
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Video {
     /// Title of the video.
     pub name: String,
@@ -40,12 +40,12 @@ pub struct Video {
 }
 
 /// A list of tournament videos
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Videos(pub Vec<Video>);
 
 #[cfg(test)]
 mod tests {
-    use *;
+    use super::*;
 
     #[test]
     fn test_videos_parse() {

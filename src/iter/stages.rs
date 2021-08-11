@@ -1,4 +1,4 @@
-use *;
+use crate::*;
 
 /// Tournament stages iterator
 pub struct StagesIter<'a> {

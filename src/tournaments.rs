@@ -1,15 +1,17 @@
-use common::Date;
-use disciplines::DisciplineId;
-use matches::{MatchFormat, MatchType};
-use participants::ParticipantType;
-use streams::Streams;
+use crate::common::Date;
+use crate::disciplines::DisciplineId;
+use crate::matches::{MatchFormat, MatchType};
+use crate::participants::ParticipantType;
+use crate::streams::Streams;
 
 /// A tournament identity.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct TournamentId(pub String);
 
 /// A tournament status.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TournamentStatus {
     /// Implies the tournament has not started yet
@@ -23,7 +25,7 @@ pub enum TournamentStatus {
 }
 
 /// A tournament object.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Tournament {
     /// An hexadecimal unique identifier for this tournament.
     /// Example: "5608fd12140ba061298b4569"
@@ -231,20 +233,17 @@ impl Tournament {
 
 impl Tournament {
     /// Returns iter for the tournament
-    pub fn iter<'a>(&self, client: &'a ::Toornament) -> Option<::TournamentIter<'a>> {
-        match self.id.clone() {
-            Some(id) => {
-                Some(::TournamentIter::new(client, id).with_streams(self.streams.is_some()))
-            }
-            None => None,
-        }
+    pub fn iter<'a>(&self, client: &'a crate::Toornament) -> Option<crate::TournamentIter<'a>> {
+        self.id
+            .clone()
+            .map(|id| crate::TournamentIter::new(client, id).with_streams(self.streams.is_some()))
     }
 
     /// Converts tournament into an iter
-    pub fn into_iter(self, client: &::Toornament) -> Option<::TournamentIter<'_>> {
+    pub fn into_iter(self, client: &crate::Toornament) -> Option<crate::TournamentIter<'_>> {
         match self.id {
             Some(id) => {
-                Some(::TournamentIter::new(client, id).with_streams(self.streams.is_some()))
+                Some(crate::TournamentIter::new(client, id).with_streams(self.streams.is_some()))
             }
             None => None,
         }
@@ -252,12 +251,14 @@ impl Tournament {
 }
 
 /// A list of `Tournament` objects.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct Tournaments(pub Vec<Tournament>);
 
 #[cfg(test)]
 mod tests {
-    use *;
+    use super::*;
 
     #[test]
     fn test_stream_parse() {
@@ -268,7 +269,7 @@ mod tests {
             "url": "http://www.twitch.tv/dreamhackcs",
             "language": "en"
         }"#;
-        let d: Stream = serde_json::from_str(string).unwrap();
+        let d: crate::Stream = serde_json::from_str(string).unwrap();
 
         assert_eq!(d.id.0, "56742bc7cc3c17ee608b4567");
         assert_eq!(d.name, "DreamhackCS");
@@ -352,7 +353,10 @@ mod tests {
         let stream_opt = streams.0.first();
         assert!(stream_opt.is_some());
         let stream = stream_opt.unwrap();
-        assert_eq!(stream.id, StreamId("56742bc7cc3c17ee608b4567".to_owned()));
+        assert_eq!(
+            stream.id,
+            crate::StreamId("56742bc7cc3c17ee608b4567".to_owned())
+        );
         assert_eq!(stream.name, "DreamhackCS");
         assert_eq!(stream.url, "http://www.twitch.tv/dreamhackcs");
         assert_eq!(stream.language, "en");

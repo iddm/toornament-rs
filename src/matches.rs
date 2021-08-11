@@ -1,16 +1,18 @@
 use chrono::{DateTime, FixedOffset};
 
-use disciplines::DisciplineId;
-use games::Games;
-use opponents::Opponents;
-use tournaments::TournamentId;
+use crate::disciplines::DisciplineId;
+use crate::games::Games;
+use crate::opponents::Opponents;
+use crate::tournaments::TournamentId;
 
 /// Match unique identificator.
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct MatchId(pub String);
 
 /// A match type enumeration.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub enum MatchType {
     /// Duel match type
     #[serde(rename = "duel")]
@@ -21,7 +23,7 @@ pub enum MatchType {
 }
 
 /// A match status.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum MatchStatus {
     /// Implies the match has not started yet
@@ -33,7 +35,7 @@ pub enum MatchStatus {
 }
 
 /// A Match format enumeration.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub enum MatchFormat {
     /// Needs description
     #[serde(rename = "none")]
@@ -62,7 +64,7 @@ pub enum MatchFormat {
 }
 
 /// Tournament or discipline match definition.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Match {
     /// A hexadecimal unique identifier for this match.
     /// Example: "5617bb3af3df95f2318b4567"
@@ -117,8 +119,11 @@ impl Match {
 
 impl Match {
     /// Returns iter for the tournament match
-    pub fn iter_tournament<'a>(&self, client: &'a ::Toornament) -> ::TournamentMatchIter<'a> {
-        ::TournamentMatchIter::new(
+    pub fn iter_tournament<'a>(
+        &self,
+        client: &'a crate::Toornament,
+    ) -> crate::TournamentMatchIter<'a> {
+        crate::TournamentMatchIter::new(
             client,
             self.tournament_id.clone(),
             self.id.clone(),
@@ -127,27 +132,38 @@ impl Match {
     }
 
     /// Converts into iter for the tournament match
-    pub fn into_iter_tournament(self, client: &::Toornament) -> ::TournamentMatchIter<'_> {
-        ::TournamentMatchIter::new(client, self.tournament_id, self.id, self.games.is_some())
+    pub fn into_iter_tournament(
+        self,
+        client: &crate::Toornament,
+    ) -> crate::TournamentMatchIter<'_> {
+        crate::TournamentMatchIter::new(client, self.tournament_id, self.id, self.games.is_some())
     }
 
     /// Returns iter for the discipline matches
-    pub fn iter_discipline<'a>(&self, client: &'a ::Toornament) -> ::DisciplineMatchesIter<'a> {
-        ::DisciplineMatchesIter::new(client, self.discipline_id.clone())
+    pub fn iter_discipline<'a>(
+        &self,
+        client: &'a crate::Toornament,
+    ) -> crate::DisciplineMatchesIter<'a> {
+        crate::DisciplineMatchesIter::new(client, self.discipline_id.clone())
     }
 
     /// Converts into iter for the discipline matches
-    pub fn into_iter_discipline(self, client: &::Toornament) -> ::DisciplineMatchesIter<'_> {
-        ::DisciplineMatchesIter::new(client, self.discipline_id)
+    pub fn into_iter_discipline(
+        self,
+        client: &crate::Toornament,
+    ) -> crate::DisciplineMatchesIter<'_> {
+        crate::DisciplineMatchesIter::new(client, self.discipline_id)
     }
 }
 
 /// A list of `Match` objects.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct Matches(pub Vec<Match>);
 
 /// Result of a match
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct MatchResult {
     /// Status of a match
     pub status: MatchStatus,
@@ -161,7 +177,7 @@ mod tests {
 
     #[test]
     fn test_match_parse() {
-        use matches::{Match, MatchStatus, MatchType};
+        use crate::matches::{Match, MatchStatus, MatchType};
         let string = r#"
         {
             "id": "5617bb3af3df95f2318b4567",
@@ -205,8 +221,8 @@ mod tests {
 
     #[test]
     fn test_parse_match_results() {
-        use common::MatchResultSimple;
-        use matches::{MatchResult, MatchStatus};
+        use crate::common::MatchResultSimple;
+        use crate::matches::{MatchResult, MatchStatus};
         let string = r#"
         {
             "status": "pending",

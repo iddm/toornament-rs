@@ -1,9 +1,9 @@
+use crate::*;
 use iter::participants::ParticipantsIter;
 use iter::permissions::PermissionsIter;
 use iter::stages::StagesIter;
 use iter::tournament_matches::TournamentMatchesIter;
 use iter::videos::VideosIter;
-use *;
 
 #[derive(Debug, Copy, Clone)]
 enum TournamentsIterFetch {

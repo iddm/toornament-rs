@@ -1,9 +1,9 @@
 /// A stage number
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct StageNumber(pub i64);
 
 /// Tournament stage type
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum StageType {
     /// Group type
@@ -21,7 +21,7 @@ pub enum StageType {
 }
 
 /// A tournament stage
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Stage {
     /// Stage number.
     pub number: StageNumber,
@@ -35,12 +35,12 @@ pub struct Stage {
 }
 
 /// A list of tournament stages
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Stages(pub Vec<Stage>);
 
 #[cfg(test)]
 mod tests {
-    use *;
+    use super::*;
 
     #[test]
     fn test_stages_parse() {

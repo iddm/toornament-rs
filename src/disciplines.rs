@@ -1,17 +1,19 @@
 use std::collections::HashMap;
 
-use common::TeamSize;
+use crate::common::TeamSize;
 
 /// Additional fields for `Discipline` wrap.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct AdditionalFields(pub HashMap<String, HashMap<String, String>>);
 
 /// A game discipline identity.
-#[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct DisciplineId(pub String);
 
 /// A game discipline object.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Discipline {
     /// An identifier for a discipline, can be used in others APIs.
     /// Example: "counterstrike_go"
@@ -71,24 +73,23 @@ impl Discipline {
 
 impl Discipline {
     /// Returns iter for the discipline
-    pub fn iter<'a>(&self, client: &'a ::Toornament) -> ::DisciplineIter<'a> {
-        ::DisciplineIter::new(client, self.id.clone())
+    pub fn iter<'a>(&self, client: &'a crate::Toornament) -> crate::DisciplineIter<'a> {
+        crate::DisciplineIter::new(client, self.id.clone())
     }
 
     /// Converts discipline into an iter
-    pub fn into_iter(self, client: &::Toornament) -> ::DisciplineIter<'_> {
-        ::DisciplineIter::new(client, self.id)
+    pub fn into_iter(self, client: &crate::Toornament) -> crate::DisciplineIter<'_> {
+        crate::DisciplineIter::new(client, self.id)
     }
 }
 
 /// A list of `Discipline` objects.
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Disciplines(pub Vec<Discipline>);
 
 #[cfg(test)]
 mod tests {
-    extern crate serde_json;
-    use {Discipline, DisciplineId, Disciplines};
+    use super::{Discipline, DisciplineId, Disciplines};
 
     #[test]
     fn test_discipline_parse() {

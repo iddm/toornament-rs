@@ -1,9 +1,11 @@
 /// Unique participant identifier
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct ParticipantId(pub String);
 
 /// A participant type enumeration.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ParticipantType {
     /// Implies the tournament is played by teams
@@ -13,7 +15,7 @@ pub enum ParticipantType {
 }
 
 /// Logo of the participant.
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct ParticipantLogo {
     /// Url to a picture of 48x48px.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,7 +32,7 @@ pub struct ParticipantLogo {
 }
 
 /// A type of a participant's custom field
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub enum CustomFieldType {
     /// Participant's steam id
     #[serde(rename = "steam_player_id")]
@@ -71,7 +73,7 @@ pub enum CustomFieldType {
 }
 
 /// A participant's custom fields
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct CustomField {
     /// Type of field.
     #[serde(rename = "type")]
@@ -83,11 +85,15 @@ pub struct CustomField {
 }
 
 /// A list of participant's custom fields
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct CustomFields(pub Vec<CustomField>);
 
 /// An opponent involved in a match/tournament.
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct Participant {
     /// Unique identifier for this participant.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -141,13 +147,15 @@ impl Participant {
 }
 
 /// A list of participants
-#[derive(Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(
+    Clone, Default, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize,
+)]
 pub struct Participants(pub Vec<Participant>);
 
 #[cfg(test)]
 mod tests {
+    use super::{CustomFieldType, Participants};
     use serde_json;
-    use {CustomFieldType, Participants};
 
     #[test]
     fn test_participant_parse() {

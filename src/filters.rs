@@ -1,7 +1,7 @@
-use common::Date;
-use participants::ParticipantId;
-use tournaments::TournamentId;
-use videos::VideoCategory;
+use crate::common::Date;
+use crate::participants::ParticipantId;
+use crate::tournaments::TournamentId;
+use crate::videos::VideoCategory;
 
 use std::fmt;
 

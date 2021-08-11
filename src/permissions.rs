@@ -1,11 +1,11 @@
 use std::collections::BTreeSet;
 
 /// Unique permission identity
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct PermissionId(pub String);
 
 /// Permission attribute definition
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PermissionAttribute {
     /// Edit permission
@@ -25,11 +25,11 @@ pub enum PermissionAttribute {
 }
 
 /// A list of permission attributes
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct PermissionAttributes(pub BTreeSet<PermissionAttribute>);
 
 /// A user permission
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Permission {
     /// The permission identifier.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -52,12 +52,12 @@ impl Permission {
 }
 
 /// A list of permissions
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, serde::Serialize, serde::Deserialize)]
 pub struct Permissions(pub Vec<Permission>);
 
 #[cfg(test)]
 mod tests {
-    use *;
+    use super::*;
 
     #[test]
     fn test_permission_attributes_parse() {
