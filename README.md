@@ -33,8 +33,7 @@ fn main() {
 }
 ```
 
-More examples are in the  
-[`examples/` subdirectory](./examples/)
+More examples are in the [`examples/` subdirectory](./examples/).
 
 ## License
 This project is [licensed under the MIT license](https://github.com/vityafx/toornament-rs/blob/master/LICENSE).
