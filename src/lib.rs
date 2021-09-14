@@ -121,8 +121,6 @@ fn parse_token<R: Read>(json_str: R) -> Result<AccessToken> {
     struct OauthAccessToken {
         access_token: String,
         expires_in: u64,
-        token_type: String,
-        scope: Option<String>,
     }
 
     let oauth = serde_json::from_reader::<_, OauthAccessToken>(json_str)?;
